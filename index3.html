@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MATHISA</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
+<style>
+:root{--n:#0a0a0a;--c:#151515;--v:#39ff14;--t:#f2f2f2;--g:#9a9a9a}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--n);color:var(--t)}
+header{position:sticky;top:0;z-index:20;background:var(--n);border-bottom:2px solid var(--v);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;flex-wrap:wrap}
+.logo{color:var(--v);font-weight:900;font-size:26px;letter-spacing:4px;text-shadow:0 0 12px rgba(57,255,20,.5)}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+button,.btn{background:var(--c);color:var(--t);border:1px solid #333;border-radius:8px;padding:9px 14px;font-size:15px;cursor:pointer;text-decoration:none;display:inline-block}
+button:hover{border-color:var(--v);color:var(--v)}
+button:disabled{opacity:.5}
+.pri{background:var(--v);color:#000;border:none;font-weight:700}
+.pri:hover{color:#000;box-shadow:0 0 14px var(--v)}
+.mini{padding:5px 9px}
+.sel{background:var(--v);color:#000;font-weight:700}
+.hero{text-align:center;padding:50px 20px;background:radial-gradient(circle at top,#0f2a0a,var(--n) 70%)}
+.hero h1{font-size:34px;margin:0 0 10px;color:var(--v)}
+.hero p{color:var(--g);margin:0 0 20px}
+.wrap{max-width:1100px;margin:auto;padding:20px 14px}
+.filtros{margin-bottom:16px}
+select,input,textarea{background:#000;color:var(--t);border:1px solid #333;border-radius:8px;padding:9px;font-size:15px;width:100%}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.card{background:var(--c);border:1px solid #222;border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.card:hover{border-color:var(--v)}
+.foto{height:200px;background:#000;display:flex;align-items:center;justify-content:center;font-size:60px;color:var(--v);font-weight:900}
+.foto img{width:100%;height:100%;object-fit:cover}
+.info{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.precio{color:var(--v);font-weight:800;font-size:20px}
+.tag{font-size:13px;color:var(--g)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:50;display:none;overflow:auto;padding:20px}
+.modal.on{display:block}
+.caja{background:var(--c);border:1px solid var(--v);border-radius:14px;max-width:760px;margin:auto;padding:20px;position:relative}
+.x{position:absolute;top:8px;right:10px}
+.fila{display:flex;gap:10px;flex-wrap:wrap}
+.fila>*{flex:1;min-width:160px}
+.stage{position:relative;width:340px;max-width:100%;aspect-ratio:17/20;margin:auto;background:#000;border-radius:12px;overflow:hidden;touch-action:none}
+.stage svg{position:absolute;inset:0;width:100%;height:100%}
+#dis{position:absolute;cursor:move;touch-action:none;user-select:none;display:none}
+.lab{position:absolute;top:8px;left:0;right:0;text-align:center;color:var(--v);font-size:13px;font-weight:700;letter-spacing:2px;pointer-events:none}
+.item{display:flex;gap:10px;align-items:center;border-bottom:1px solid #222;padding:8px 0;flex-wrap:wrap}
+.item img{width:50px;height:50px;object-fit:contain;background:#000;border-radius:6px}
+.fl{position:fixed;right:16px;bottom:16px;z-index:30;width:58px;height:58px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.5)}
+.fl svg{width:34px;height:34px}
+.badge{background:var(--v);color:#000;border-radius:50%;font-size:12px;min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;margin-left:4px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button.on{background:var(--v);color:#000}
+.ped{border:1px solid #333;border-radius:10px;padding:12px;margin-bottom:10px}
+.msg{color:#ff6b6b;font-size:14px;min-height:18px;margin-top:8px}
+h2,h3{color:var(--v);margin-top:0}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">MATHISA</div>
+  <nav>
+    <button data-c="camisas">Camisas</button>
+    <button data-c="termos">Termos</button>
+    <button data-c="cases">Cases para celular</button>
+  </nav>
+  <div style="display:flex;gap:8px">
+    <button id="btnCart">🛒 Carrito<span class="badge" id="nCart">0</span></button>
+    <button id="btnAdmin">Admin</button>
+  </div>
+</header>
+
+<section class="hero">
+  <h1>Diseña tu propio estilo</h1>
+  <p>Sube tu imagen y mira cómo queda antes de comprar. Envíos a todo Colombia.</p>
+  <button class="pri" onclick="ir('camisas')">Ver productos</button>
+</section>
+
+<main class="wrap">
+  <div class="filtros" id="filtros"></div>
+  <div class="grid" id="grid"><p class="tag">Cargando productos...</p></div>
+</main>
+
+<a class="fl" id="wa" target="_blank" rel="noopener" title="Escríbenos por WhatsApp">
+  <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2z"/></svg>
+</a>
+
+<!-- Personalizar -->
+<div class="modal" id="mPers"><div class="caja">
+  <button class="x" onclick="cerrar('mPers')">✕</button>
+  <h2 id="pNom"></h2>
+  <div class="fila">
+    <div>
+      <div style="display:flex;gap:6px;margin-bottom:8px"><button id="bF" class="sel" onclick="setLado('frente')">Frente</button><button id="bA" onclick="setLado('atras')">Atrás</button></div>
+      <div class="stage" id="stage"></div>
+      <div style="display:grid;grid-template-columns:repeat(3,44px);gap:4px;justify-content:center;margin:8px 0">
+        <span></span><button onclick="mover(0,-3)">▲</button><span></span>
+        <button onclick="mover(-3,0)">◀</button><span></span><button onclick="mover(3,0)">▶</button>
+        <span></span><button onclick="mover(0,3)">▼</button><span></span>
+      </div>
+      <p class="tag">Mueve el diseño donde quieras: arrástralo o usa las flechas.</p>
+      <label class="tag">Tamaño del diseño<input type="range" min="5" max="100" value="40" id="tam"></label>
+      <div class="tag" style="display:flex;justify-content:space-between"><span>Pequeño</span><span>Grande</span></div>
+    </div>
+    <div>
+      <label>1. Sube tu imagen o diseño<input type="file" accept="image/*" id="file" style="margin-top:6px"></label>
+      <br><br>
+      <label>2. Elige la talla<select id="talla" style="margin-top:6px"></select></label>
+      <p class="tag">Esta vista es una referencia. El resultado real puede variar un poco.</p>
+      <button class="pri" onclick="agregarPers()">Agregar al carrito</button>
+      <div class="msg" id="pMsg"></div>
+    </div>
+  </div>
+</div></div>
+
+<!-- Carrito y pedido -->
+<div class="modal" id="mCart"><div class="caja">
+  <button class="x" onclick="cerrar('mCart')">✕</button>
+  <h2>Tu carrito</h2>
+  <div id="lista"></div>
+  <p>Subtotal: <b id="sub"></b> · Envío a todo Colombia: <b id="envT"></b></p>
+  <p style="font-size:20px">Total: <b class="precio" id="tot"></b></p>
+  <div class="fila"><input id="cN" placeholder="Nombre completo"><input id="cT" placeholder="Celular (WhatsApp)"></div>
+  <br>
+  <div class="fila"><input id="cC" placeholder="Ciudad y departamento"><input id="cD" placeholder="Dirección completa"></div>
+  <br>
+  <select id="cP"><option>Transferencia (Nequi / Bancolombia)</option><option>Pago contra entrega</option></select>
+  <br><br>
+  <textarea id="cO" rows="2" placeholder="Notas (opcional)"></textarea>
+  <button class="pri" id="btnPedir" style="margin-top:12px;width:100%">Confirmar compra</button>
+  <div class="msg" id="cMsg"></div>
+</div></div>
+
+<!-- Venta realizada -->
+<div class="modal" id="mOk"><div class="caja" style="text-align:center">
+  <h2>¡Venta realizada!</h2>
+  <p>Tu número de pedido es <b id="okCod"></b>.</p>
+  <p class="tag">Guardamos tu pedido y te contactaremos para confirmar el envío.</p>
+  <a class="btn pri" id="okWa" target="_blank" rel="noopener">Enviar resumen por WhatsApp</a>
+  <br><br>
+  <button onclick="cerrar('mOk')">Volver a la tienda</button>
+</div></div>
+
+<!-- Administrador -->
+<div class="modal" id="mAdmin"><div class="caja" style="max-width:960px">
+  <button class="x" onclick="cerrar('mAdmin')">✕</button>
+  <div id="login">
+    <h2>Entrar como administrador</h2>
+    <input id="u" type="email" placeholder="Correo del administrador"><br><br>
+    <input id="p" type="password" placeholder="Clave"><br><br>
+    <button class="pri" onclick="entrar()">Entrar</button>
+    <div class="msg" id="lMsg"></div>
+  </div>
+  <div id="panel" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><h2>Panel administrador</h2><button onclick="salir()">Cerrar sesión</button></div>
+    <div class="tabs">
+      <button data-t="pedidos">Pedidos</button>
+      <button data-t="clientes">Clientes</button>
+      <button data-t="productos">Productos</button>
+      <button data-t="disenos">Diseños</button>
+      <button data-t="config">Configuración</button>
+    </div>
+    <div id="tab"></div>
+  </div>
+</div></div>
+
+<script>
+// ===== CONEXIÓN CON SUPABASE: reemplaza estos dos datos =====
+const SB_URL='https://mokrehkvurdtbmuyifaw.supabase.co';
+const SB_KEY='sb_publishable_GBsTtSu9cmw_Kj1J1N-qfA_qnuxR8Zj';
+const sb=supabase.createClient(SB_URL,SB_KEY);
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const COP=n=>'$'+Number(n).toLocaleString('es-CO');
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
+const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){alert('No se pudo guardar en este navegador.');return false}};
+const waLink=t=>`https://wa.me/${cfg.whatsapp}?text=${encodeURIComponent(t)}`;
+const dTxt=d=>Object.entries(d).map(([k,v])=>`${k}: izquierda ${Math.round(v.x)}%, arriba ${Math.round(v.y)}%, tamaño ${Math.round(v.w)}%`).join('; ');
+
+const SVG={
+ camisas:'<svg viewBox="0 0 300 360"><path d="M110 40 Q150 22 190 40 L260 70 L290 140 L250 165 L235 135 L235 330 L65 330 L65 135 L50 165 L10 140 L40 70 Z" fill="#1c1c1c" stroke="#39ff14" stroke-width="2"/><path d="M110 40 Q150 75 190 40" fill="none" stroke="#39ff14" stroke-width="2"/></svg>',
+ termos:'<svg viewBox="0 0 200 280"><rect x="55" y="20" width="90" height="250" rx="22" fill="#1c1c1c" stroke="#39ff14" stroke-width="2"/><rect x="60" y="20" width="80" height="30" rx="10" fill="#111" stroke="#39ff14"/></svg>',
+ cases:'<svg viewBox="0 0 200 280"><rect x="50" y="10" width="100" height="260" rx="24" fill="#1c1c1c" stroke="#39ff14" stroke-width="2"/><circle cx="72" cy="36" r="10" fill="#111" stroke="#39ff14"/></svg>'
+};
+const COLLAR='<path d="M110 40 Q150 75 190 40" fill="none" stroke="#39ff14" stroke-width="2"/>';
+
+let prods=[], cfg={whatsapp:'573000000000',envio:15000}, carrito=load('mx_carrito',[]);
+let cat='camisas', sub='', actual=null, lados={frente:null,atras:null}, lado='frente', drag=null;
+let sesion=null, tabA='pedidos', editId=null, adm=[];
+const msg=t=>$('#cMsg').textContent=t;
+
+// ===== Cargar datos desde Supabase =====
+async function cargar(){
+  const [p,c]=await Promise.all([sb.from('productos').select('*').order('id'), sb.from('config').select('*')]);
+  if(p.error||c.error){$('#grid').innerHTML='<p class="tag">No se pudieron cargar los productos. Revisa la conexión con Supabase.</p>';return}
+  prods=p.data.filter(x=>x.activo!==false);
+  c.data.forEach(r=>cfg[r.clave]=r.valor);
+  cfg.envio=+cfg.envio||0;
+  $('#wa').href=waLink('Hola MATHISA, quiero información');
+  render();
+}
+
+// ===== Catálogo =====
+function ir(c){cat=c;sub='';render()}
+function render(){
+  document.querySelectorAll('nav button').forEach(b=>b.style.borderColor=b.dataset.c===cat?'#39ff14':'#333');
+  $('#filtros').innerHTML=cat==='cases'?`<select style="width:auto" onchange="sub=this.value;renderGrid()"><option value="">Todas las marcas</option><option value="Xiaomi">Xiaomi</option><option value="iPhone">iPhone</option></select>`:'';
+  renderGrid(); renderCart();
+}
+function renderGrid(){
+  const l=prods.filter(p=>p.cat===cat&&(!sub||p.sub===sub));
+  $('#grid').innerHTML=l.map(p=>`<div class="card"><div class="foto">${p.imagen?`<img src="${esc(p.imagen)}" alt="">`:esc(p.nombre[0])}</div><div class="info"><div>${esc(p.nombre)}</div>${p.sub?`<div class="tag">Marca: ${esc(p.sub)}</div>`:''}<div class="tag">${esc(p.descripcion)}</div><div class="precio">${COP(p.precio)}</div><button class="pri" onclick="personalizar(${p.id})">Personalizar y comprar</button></div></div>`).join('')||'<p class="tag">No hay productos en esta categoría.</p>';
+}
+
+// ===== Personalizar =====
+function personalizar(id){
+  actual=prods.find(p=>p.id===id); lados={frente:null,atras:null};
+  $('#pNom').textContent=actual.nombre;
+  $('#talla').innerHTML=actual.cat==='camisas'?['S','M','L','XL'].map(t=>`<option>Talla ${t}</option>`).join(''):'<option>Estándar</option>';
+  $('#file').value=''; $('#pMsg').textContent='';
+  setLado('frente'); abrir('mPers');
+}
+function setLado(l){
+  lado=l;
+  $('#bF').className=l==='frente'?'sel':''; $('#bA').className=l==='atras'?'sel':'';
+  const base=(actual.cat==='camisas'&&l==='atras')?SVG.camisas.replace(COLLAR,''):SVG[actual.cat];
+  $('#stage').innerHTML=base+`<div class="lab">${l==='frente'?'FRENTE':'ESPALDA'}</div><img id="dis" alt="">`;
+  $('#tam').value=lados[l]?lados[l].w:40;
+  applyPos();
+}
+function applyPos(){
+  const d=$('#dis'), v=lados[lado];
+  if(!v){d.style.display='none';return}
+  d.src=v.img; d.style.display='block';
+  d.style.left=v.x+'%'; d.style.top=v.y+'%'; d.style.width=v.w+'%';
+}
+function mover(dx,dy){
+  if(!lados[lado])return $('#pMsg').textContent='Primero sube tu imagen.';
+  lados[lado].x=Math.min(100,Math.max(-50,lados[lado].x+dx));
+  lados[lado].y=Math.min(100,Math.max(-50,lados[lado].y+dy));
+  applyPos();
+}
+function leerImg(file){
+  return new Promise(res=>{
+    const fr=new FileReader();
+    fr.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,500/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=im.width*s;c.height=im.height*s;c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/png'))};im.src=fr.result};
+    fr.readAsDataURL(file);
+  });
+}
+$('#file').onchange=async e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const img=await leerImg(f);
+  lados[lado]={img,x:30,y:30,w:40};
+  $('#tam').value=40; $('#pMsg').textContent=''; applyPos();
+};
+$('#tam').oninput=e=>{if(lados[lado]){lados[lado].w=+e.target.value;applyPos()}};
+const st=$('#stage');
+st.addEventListener('pointerdown',e=>{if(e.target.id!=='dis'||!lados[lado])return;drag={x:e.clientX,y:e.clientY,lx:lados[lado].x,ly:lados[lado].y};e.target.setPointerCapture(e.pointerId)});
+st.addEventListener('pointermove',e=>{if(!drag)return;lados[lado].x=drag.lx+(e.clientX-drag.x)/st.clientWidth*100;lados[lado].y=drag.ly+(e.clientY-drag.y)/st.clientHeight*100;applyPos()});
+st.addEventListener('pointerup',()=>drag=null);
+st.addEventListener('pointercancel',()=>drag=null);
+
+function agregarPers(){
+  if(!actual)return;
+  carrito.push({pid:actual.id,nom:actual.nombre,precio:actual.precio,talla:$('#talla').value,diseno:(lados.frente||lados.atras)?{frente:lados.frente,atras:lados.atras}:null,qty:1});
+  if(!save('mx_carrito',carrito)){carrito.pop();return}
+  cerrar('mPers'); renderCart(); abrir('mCart');
+}
+
+// ===== Carrito =====
+function thumbs(d){if(!d||typeof d!=='object')return '';return ['frente','atras'].filter(k=>d[k]).map(k=>`<img src="${d[k].img}" alt="" title="${k}">`).join('')}
+function renderCart(){
+  $('#nCart').textContent=carrito.reduce((a,i)=>a+i.qty,0);
+  $('#lista').innerHTML=carrito.length?carrito.map((i,k)=>`<div class="item">${thumbs(i.diseno)}<div style="flex:1"><div>${esc(i.nom)}</div><div class="tag">${esc(i.talla)} · ${COP(i.precio)}${i.diseno?' · con diseño':''}</div></div><button class="mini" onclick="cant(${k},-1)">−</button> ${i.qty} <button class="mini" onclick="cant(${k},1)">+</button> <button class="mini" onclick="quitar(${k})">Quitar</button></div>`).join(''):'<p class="tag">Tu carrito está vacío.</p>';
+  const s=carrito.reduce((a,i)=>a+i.precio*i.qty,0), env=carrito.length?cfg.envio:0;
+  $('#sub').textContent=COP(s); $('#envT').textContent=COP(env); $('#tot').textContent=COP(s+env);
+}
+function cant(k,d){carrito[k].qty=Math.max(1,carrito[k].qty+d);save('mx_carrito',carrito);renderCart()}
+function quitar(k){carrito.splice(k,1);save('mx_carrito',carrito);renderCart()}
+
+// Sube el diseño a Supabase Storage y devuelve su ruta
+async function subirDiseno(durl){
+  const blob=await (await fetch(durl)).blob();
+  const path=`${Date.now()}-${Math.random().toString(36).slice(2,8)}.png`;
+  const {error}=await sb.storage.from('disenos').upload(path,blob,{contentType:'image/png'});
+  if(error)throw error;
+  return path;
+}
+
+async function pedir(){
+  const v=['#cN','#cT','#cC','#cD'].map(s=>$(s).value.trim());
+  if(!carrito.length)return msg('Tu carrito está vacío.');
+  if(v.some(x=>!x))return msg('Completa nombre, celular, ciudad y dirección.');
+  const btn=$('#btnPedir'); btn.disabled=true; btn.textContent='Registrando venta...';
+  try{
+    const items=[];
+    for(const i of carrito){
+      let d=null;
+      if(i.diseno){
+        d={};
+        for(const k of ['frente','atras']){const g=i.diseno[k]; if(g) d[k]={path:await subirDiseno(g.img),x:g.x,y:g.y,w:g.w}}
+      }
+      items.push({nombre:i.nom,talla:i.talla,precio:i.precio,cantidad:i.qty,diseno:d&&Object.keys(d).length?d:null});
+    }
+    const total=carrito.reduce((a,i)=>a+i.precio*i.qty,0)+cfg.envio;
+    const codigo='MX-'+Date.now().toString(36).toUpperCase().slice(-6);
+    const {error}=await sb.from('pedidos').insert({codigo,cliente:v[0],celular:v[1],ciudad:v[2],direccion:v[3],pago:$('#cP').value,notas:$('#cO').value.trim(),items,total,estado:'Nuevo'});
+    if(error)throw error;
+    const resumen=`Hola MATHISA, acabo de hacer el pedido ${codigo}. Total: ${COP(total)}. Nombre: ${v[0]}. Celular: ${v[1]}.`;
+    carrito=[]; save('mx_carrito',carrito); renderCart(); cerrar('mCart');
+    $('#okCod').textContent=codigo; $('#okWa').href=waLink(resumen); abrir('mOk');
+  }catch(e){
+    console.error(e); msg('No se pudo registrar la venta. Revisa tu conexión e intenta de nuevo.');
+  }finally{
+    btn.disabled=false; btn.textContent='Confirmar compra';
+  }
+}
+
+// ===== Modales =====
+function abrir(id){$('#'+id).classList.add('on');renderCart()}
+function cerrar(id){$('#'+id).classList.remove('on')}
+
+// ===== Administrador =====
+$('#btnAdmin').onclick=async()=>{
+  abrir('mAdmin');
+  sesion=(await sb.auth.getSession()).data.session;
+  mostrarAdmin();
+};
+function mostrarAdmin(){
+  $('#login').style.display=sesion?'none':'block';
+  $('#panel').style.display=sesion?'block':'none';
+  if(sesion)tabAdm(tabA);
+}
+async function entrar(){
+  const {error}=await sb.auth.signInWithPassword({email:$('#u').value.trim(),password:$('#p').value});
+  if(error)return $('#lMsg').textContent='Correo o clave incorrectos.';
+  sesion=(await sb.auth.getSession()).data.session;
+  mostrarAdmin();
+}
+async function salir(){await sb.auth.signOut();sesion=null;mostrarAdmin()}
+function tabAdm(t){
+  tabA=t;
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  ({pedidos:vPedidos,clientes:vClientes,productos:vProductos,disenos:vDisenos,config:vConfig})[t]();
+}
+
+async function vPedidos(){
+  const {data,error}=await sb.from('pedidos').select('*').order('creado',{ascending:false});
+  if(error)return $('#tab').textContent='Error: '+error.message;
+  $('#tab').innerHTML=data.length?data.map(p=>`<div class="ped"><b>${esc(p.codigo)}</b> · ${new Date(p.creado).toLocaleString('es-CO')} · <b>${COP(p.total)}</b>
+    <div>${esc(p.cliente)} · ${esc(p.celular)} · ${esc(p.ciudad)}</div>
+    <div class="tag">${esc(p.direccion)} · Pago: ${esc(p.pago)}${p.notas?' · Notas: '+esc(p.notas):''}</div>
+    <div class="tag">${p.items.map(i=>esc(`${i.cantidad} x ${i.nombre} (${i.talla})`)+(i.diseno?' · diseño: '+esc(dTxt(i.diseno)):'')).join('<br>')}</div>
+    <select style="width:auto;margin-top:6px" onchange="estado(${p.id},this.value)">${['Nuevo','En producción','Enviado','Entregado'].map(s=>`<option ${s===p.estado?'selected':''}>${s}</option>`).join('')}</select>
+    <button class="mini" onclick="borrarPed(${p.id})">Eliminar</button></div>`).join(''):'<p class="tag">Aún no hay pedidos.</p>';
+}
+async function estado(id,v){const {error}=await sb.from('pedidos').update({estado:v}).eq('id',id);if(error)alert('Error: '+error.message)}
+async function borrarPed(id){if(confirm('¿Eliminar este pedido?')){await sb.from('pedidos').delete().eq('id',id);vPedidos()}}
+
+async function vClientes(){
+  const {data}=await sb.from('pedidos').select('cliente,celular,ciudad,direccion,total,creado').order('creado',{ascending:false});
+  const m={};
+  (data||[]).forEach(p=>{const c=m[p.celular]||(m[p.celular]={nombre:p.cliente,celular:p.celular,ciudad:p.ciudad,direccion:p.direccion,pedidos:0,gastado:0,ultimo:p.creado});c.pedidos++;c.gastado+=p.total});
+  const l=Object.values(m);
+  $('#tab').innerHTML=l.length?`<p class="tag">${l.length} clientes</p>`+l.map(c=>`<div class="ped"><b>${esc(c.nombre)}</b> · ${esc(c.celular)} · ${esc(c.ciudad)}<div class="tag">${esc(c.direccion)}</div><div>Pedidos: ${c.pedidos} · Total comprado: ${COP(c.gastado)} · Último: ${new Date(c.ultimo).toLocaleDateString('es-CO')}</div></div>`).join(''):'<p class="tag">Aún no hay clientes.</p>';
+}
+
+async function vProductos(){
+  const {data,error}=await sb.from('productos').select('*').order('id');
+  if(error)return $('#tab').textContent='Error: '+error.message;
+  adm=data;
+  $('#tab').innerHTML=data.map((p,k)=>`<div class="ped"><b>${esc(p.nombre)}</b> <span class="tag">(${esc(p.cat)}${p.sub?' · '+esc(p.sub):''})</span> · ${COP(p.precio)} <button class="mini" onclick="editP(${k})">Editar</button> <button class="mini" onclick="delP(${p.id})">Eliminar</button></div>`).join('')+`<h3 style="margin-top:16px">Agregar o editar producto</h3><div id="fp" class="fila"></div>`;
+  formP(null);
+}
+function formP(p){
+  p=p||{nombre:'',precio:'',cat:'camisas',sub:'',descripcion:'',imagen:''};
+  editId=p.id||null;
+  $('#fp').innerHTML=`<input id="fN" placeholder="Nombre del producto" value="${esc(p.nombre)}">
+    <input id="fPr" type="number" placeholder="Precio en COP" value="${p.precio}">
+    <select id="fC"><option value="camisas">Camisas</option><option value="termos">Termos</option><option value="cases">Cases</option></select>
+    <select id="fS"><option value="">Sin marca</option><option value="Xiaomi">Xiaomi</option><option value="iPhone">iPhone</option></select>
+    <input id="fD" placeholder="Descripción" value="${esc(p.descripcion)}">
+    <input id="fI" placeholder="Link de la foto (opcional)" value="${esc(p.imagen)}">
+    <button class="pri" onclick="guardarP()">Guardar producto</button>
+    <button onclick="vProductos()">Limpiar</button>`;
+  $('#fC').value=p.cat; $('#fS').value=p.sub||'';
+}
+function editP(k){formP(adm[k])}
+async function guardarP(){
+  const o={nombre:$('#fN').value.trim(),precio:+$('#fPr').value,cat:$('#fC').value,sub:$('#fS').value,descripcion:$('#fD').value.trim(),imagen:$('#fI').value.trim()};
+  if(!o.nombre||!o.precio)return alert('Falta el nombre o el precio.');
+  const r=editId?await sb.from('productos').update(o).eq('id',editId):await sb.from('productos').insert(o);
+  if(r.error)return alert('Error: '+r.error.message);
+  await cargar(); vProductos();
+}
+async function delP(id){if(confirm('¿Eliminar este producto?')){await sb.from('productos').delete().eq('id',id);await cargar();vProductos()}}
+
+async function vDisenos(){
+  const {data}=await sb.from('pedidos').select('codigo,cliente,celular,items').order('creado',{ascending:false});
+  const lista=[];
+  (data||[]).forEach(p=>p.items.forEach(i=>{if(i.diseno)Object.entries(i.diseno).forEach(([k,v])=>lista.push({p,i,k,v}))}));
+  if(!lista.length){$('#tab').innerHTML='<p class="tag">Aún no hay diseños de clientes.</p>';return}
+  $('#tab').innerHTML='<div class="grid" id="gd"></div>';
+  for(const x of lista){
+    const {data:s}=await sb.storage.from('disenos').createSignedUrl(x.v.path,3600);
+    $('#gd').insertAdjacentHTML('beforeend',`<div class="card"><div class="foto" style="height:160px">${s?`<img src="${s.signedUrl}" alt="">`:''}</div><div class="info"><div class="tag">${esc(x.i.nombre)} · ${esc(x.k)}</div><div>${esc(x.p.cliente)} · ${esc(x.p.celular)}</div><div class="tag">${esc(x.p.codigo)} · ${esc(dTxt({[x.k]:x.v}))}</div>${s?`<a class="btn" href="${s.signedUrl}" target="_blank" rel="noopener">Abrir diseño</a>`:''}</div></div>`);
+  }
+}
+
+async function vConfig(){
+  $('#tab').innerHTML=`<div class="fila"><input id="cW" placeholder="WhatsApp: 57 + número" value="${esc(cfg.whatsapp)}"><input id="cE" type="number" placeholder="Costo de envío en COP" value="${cfg.envio}"></div><br><button class="pri" onclick="guardarCfg()">Guardar configuración</button>`;
+}
+async function guardarCfg(){
+  const w=$('#cW').value.replace(/\D/g,''), e=+$('#cE').value||0;
+  const {error}=await sb.from('config').upsert([{clave:'whatsapp',valor:w},{clave:'envio',valor:String(e)}]);
+  if(error)return alert('Error: '+error.message);
+  await cargar(); alert('Configuración guardada.');
+}
+
+// ===== Inicio =====
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>ir(b.dataset.c));
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>tabAdm(b.dataset.t));
+$('#btnCart').onclick=()=>abrir('mCart');
+$('#btnPedir').onclick=pedir;
+cargar();
+</script>
+</body>
+</html>
