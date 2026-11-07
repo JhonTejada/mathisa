@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MATHISA</title>
+<style>
+:root{--n:#0a0a0a;--c:#151515;--v:#39ff14;--t:#f2f2f2;--g:#9a9a9a}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--n);color:var(--t)}
+header{position:sticky;top:0;z-index:20;background:var(--n);border-bottom:2px solid var(--v);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;flex-wrap:wrap}
+.logo{color:var(--v);font-weight:900;font-size:26px;letter-spacing:4px;text-shadow:0 0 12px rgba(57,255,20,.5)}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+button,.btn{background:var(--c);color:var(--t);border:1px solid #333;border-radius:8px;padding:9px 14px;font-size:15px;cursor:pointer;text-decoration:none;display:inline-block}
+button:hover{border-color:var(--v);color:var(--v)}
+.pri{background:var(--v);color:#000;border:none;font-weight:700}
+.pri:hover{color:#000;box-shadow:0 0 14px var(--v)}
+.mini{padding:5px 9px}
+.hero{text-align:center;padding:50px 20px;background:radial-gradient(circle at top,#0f2a0a,var(--n) 70%)}
+.hero h1{font-size:34px;margin:0 0 10px;color:var(--v)}
+.hero p{color:var(--g);margin:0 0 20px}
+.wrap{max-width:1100px;margin:auto;padding:20px 14px}
+.filtros{margin-bottom:16px}
+select,input,textarea{background:#000;color:var(--t);border:1px solid #333;border-radius:8px;padding:9px;font-size:15px;width:100%}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.card{background:var(--c);border:1px solid #222;border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.card:hover{border-color:var(--v)}
+.foto{height:200px;background:#000;display:flex;align-items:center;justify-content:center;font-size:60px;color:var(--v);font-weight:900}
+.foto img{width:100%;height:100%;object-fit:cover}
+.info{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.precio{color:var(--v);font-weight:800;font-size:20px}
+.tag{font-size:13px;color:var(--g)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:50;display:none;overflow:auto;padding:20px}
+.modal.on{display:block}
+.caja{background:var(--c);border:1px solid var(--v);border-radius:14px;max-width:760px;margin:auto;padding:20px;position:relative}
+.x{position:absolute;top:8px;right:10px}
+.fila{display:flex;gap:10px;flex-wrap:wrap}
+.fila>*{flex:1;min-width:160px}
+.stage{position:relative;width:260px;height:300px;margin:auto;background:#000;border-radius:12px;overflow:hidden;touch-action:none}
+.stage svg{position:absolute;inset:0;width:100%;height:100%}
+#dis{position:absolute;width:110px;cursor:move;touch-action:none;user-select:none;display:none}
+.item{display:flex;gap:10px;align-items:center;border-bottom:1px solid #222;padding:8px 0;flex-wrap:wrap}
+.item img{width:50px;height:50px;object-fit:contain;background:#000;border-radius:6px}
+.fl{position:fixed;right:16px;bottom:16px;z-index:30;width:58px;height:58px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.5)}
+.fl svg{width:34px;height:34px}
+.badge{background:var(--v);color:#000;border-radius:50%;font-size:12px;min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;margin-left:4px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button.on{background:var(--v);color:#000}
+.ped{border:1px solid #333;border-radius:10px;padding:12px;margin-bottom:10px}
+.msg{color:#ff6b6b;font-size:14px;min-height:18px;margin-top:8px}
+h2,h3{color:var(--v);margin-top:0}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">MATHISA</div>
+  <nav>
+    <button data-c="camisas">Camisas</button>
+    <button data-c="termos">Termos</button>
+    <button data-c="cases">Cases para celular</button>
+  </nav>
+  <div style="display:flex;gap:8px">
+    <button id="btnCart">🛒 Carrito<span class="badge" id="nCart">0</span></button>
+    <button id="btnAdmin">Admin</button>
+  </div>
+</header>
+
+<section class="hero">
+  <h1>Diseña tu propio estilo</h1>
+  <p>Sube tu imagen y mira cómo queda antes de comprar. Envíos a todo Colombia.</p>
+  <button class="pri" onclick="ir('camisas')">Ver productos</button>
+</section>
+
+<main class="wrap">
+  <div class="filtros" id="filtros"></div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<a class="fl" id="wa" target="_blank" rel="noopener" title="Escríbenos por WhatsApp">
+  <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2z"/></svg>
+</a>
+
+<!-- Personalizar producto -->
+<div class="modal" id="mPers"><div class="caja">
+  <button class="x" onclick="cerrar('mPers')">✕</button>
+  <h2 id="pNom"></h2>
+  <div class="fila">
+    <div>
+      <div class="stage" id="stage"></div>
+      <p class="tag">Arrastra tu diseño sobre el producto para moverlo. Usa la barra para cambiar su tamaño.</p>
+      <input type="range" min="40" max="250" value="110" id="tam">
+    </div>
+    <div>
+      <label>1. Sube tu imagen o diseño<input type="file" accept="image/*" id="file" style="margin-top:6px"></label>
+      <br><br>
+      <label>2. Elige la talla<select id="talla" style="margin-top:6px"></select></label>
+      <p class="tag">Esta vista es una referencia. El resultado real puede variar un poco.</p>
+      <button class="pri" onclick="agregarPers()">Agregar al carrito</button>
+      <div class="msg" id="pMsg"></div>
+    </div>
+  </div>
+</div></div>
+
+<!-- Carrito y pedido -->
+<div class="modal" id="mCart"><div class="caja">
+  <button class="x" onclick="cerrar('mCart')">✕</button>
+  <h2>Tu carrito</h2>
+  <div id="lista"></div>
+  <p>Subtotal: <b id="sub"></b> · Envío a todo Colombia: <b id="envT"></b></p>
+  <p style="font-size:20px">Total: <b class="precio" id="tot"></b></p>
+  <div class="fila"><input id="cN" placeholder="Nombre completo"><input id="cT" placeholder="Celular (WhatsApp)"></div>
+  <br>
+  <div class="fila"><input id="cC" placeholder="Ciudad y departamento"><input id="cD" placeholder="Dirección completa"></div>
+  <br>
+  <select id="cP"><option>Transferencia (Nequi / Bancolombia)</option><option>Pago contra entrega</option></select>
+  <br><br>
+  <textarea id="cO" rows="2" placeholder="Notas (opcional)"></textarea>
+  <button class="pri" style="margin-top:12px;width:100%" onclick="pedir()">Enviar pedido por WhatsApp</button>
+  <div class="msg" id="cMsg"></div>
+</div></div>
+
+<!-- Panel administrador -->
+<div class="modal" id="mAdmin"><div class="caja" style="max-width:960px">
+  <button class="x" onclick="cerrar('mAdmin')">✕</button>
+  <div id="login">
+    <h2>Entrar como administrador</h2>
+    <input id="u" placeholder="Usuario"><br><br>
+    <input id="p" type="password" placeholder="Clave"><br><br>
+    <button class="pri" onclick="entrar()">Entrar</button>
+    <div class="msg" id="lMsg"></div>
+  </div>
+  <div id="panel" style="display:none">
+    <h2>Panel administrador</h2>
+    <div class="tabs">
+      <button data-t="pedidos">Pedidos</button>
+      <button data-t="productos">Productos</button>
+      <button data-t="disenos">Diseños de clientes</button>
+      <button data-t="config">Configuración</button>
+    </div>
+    <div id="tab"></div>
+  </div>
+</div></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const COP=n=>'$'+Number(n).toLocaleString('es-CO');
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
+const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){alert('No se pudo guardar: el espacio del navegador está lleno. Elimina pedidos o diseños antiguos.');return false}};
+const waLink=t=>`https://wa.me/${cfg.wa}?text=${encodeURIComponent(t)}`;
+
+// ===== DATOS DE EJEMPLO: precios y productos son provisionales, cámbialos en el panel Admin =====
+const DEF=[
+ {id:1,cat:'camisas',sub:'',name:'Camisa personalizada negra',precio:65000,desc:'Algodón. Tallas S, M, L, XL',img:''},
+ {id:2,cat:'camisas',sub:'',name:'Camisa personalizada blanca',precio:65000,desc:'Algodón. Tallas S, M, L, XL',img:''},
+ {id:3,cat:'termos',sub:'',name:'Termo personalizado 500 ml',precio:55000,desc:'Acero inoxidable',img:''},
+ {id:4,cat:'termos',sub:'',name:'Termo personalizado 750 ml',precio:70000,desc:'Acero inoxidable',img:''},
+ {id:5,cat:'cases',sub:'Xiaomi',name:'Case Xiaomi Redmi Note 13',precio:35000,desc:'Case personalizado',img:''},
+ {id:6,cat:'cases',sub:'Xiaomi',name:'Case Xiaomi Redmi 13C',precio:35000,desc:'Case personalizado',img:''},
+ {id:7,cat:'cases',sub:'iPhone',name:'Case iPhone 14',precio:35000,desc:'Case personalizado',img:''},
+ {id:8,cat:'cases',sub:'iPhone',name:'Case iPhone 15',precio:35000,desc:'Case personalizado',img:''}
+];
+let cfg=load('mx_cfg',{wa:'573000000000',envio:15000,clave:'cambiar123'});
+let prods=load('mx_prods',DEF);
+let pedidos=load('mx_pedidos',[]);
+let carrito=load('mx_carrito',[]);
+let cat='camisas', sub='', actual=null, dis=null, drag=null, adminOk=false, tabA='pedidos', editId=null;
+
+// Maniquí y siluetas genéricas (sin foto de modelo)
+const SVG={
+ camisas:'<svg viewBox="0 0 200 280"><circle cx="100" cy="30" r="22" fill="#1c1c1c" stroke="#39ff14" stroke-width="2"/><path d="M60 65 L140 65 L175 95 L160 130 L150 115 L150 270 L50 270 L50 115 L40 130 L25 95 Z" fill="#1c1c1c" stroke="#39ff14" stroke-width="2"/></svg>',
+ termos:'<svg viewBox="0 0 200 280"><rect x="55" y="20" width="90" height="250" rx="22" fill="#1c1c1c" stroke="#39ff14" stroke-width="2"/><rect x="60" y="20" width="80" height="30" rx="10" fill="#111" stroke="#39ff14"/></svg>',
+ cases:'<svg viewBox="0 0 200 280"><rect x="50" y="10" width="100" height="260" rx="24" fill="#1c1c1c" stroke="#39ff14" stroke-width="2"/><circle cx="72" cy="36" r="10" fill="#111" stroke="#39ff14"/></svg>'
+};
+
+// ===== Catálogo =====
+function ir(c){cat=c;sub='';render()}
+function render(){
+  document.querySelectorAll('nav button').forEach(b=>b.style.borderColor=b.dataset.c===cat?'#39ff14':'#333');
+  $('#filtros').innerHTML=cat==='cases'?`<select style="width:auto" onchange="sub=this.value;renderGrid()"><option value="">Todas las marcas</option><option value="Xiaomi">Xiaomi</option><option value="iPhone">iPhone</option></select>`:'';
+  renderGrid(); renderCart();
+}
+function renderGrid(){
+  const l=prods.filter(p=>p.cat===cat&&(!sub||p.sub===sub));
+  $('#grid').innerHTML=l.map(p=>`<div class="card"><div class="foto">${p.img?`<img src="${esc(p.img)}" alt="">`:esc(p.name[0])}</div><div class="info"><div>${esc(p.name)}</div>${p.sub?`<div class="tag">Marca: ${esc(p.sub)}</div>`:''}<div class="tag">${esc(p.desc)}</div><div class="precio">${COP(p.precio)}</div><button class="pri" onclick="personalizar(${p.id})">Personalizar y comprar</button></div></div>`).join('')||'<p class="tag">No hay productos en esta categoría.</p>';
+}
+
+// ===== Personalizar =====
+function personalizar(id){
+  actual=prods.find(p=>p.id===id); dis=null;
+  $('#pNom').textContent=actual.name;
+  $('#talla').innerHTML=actual.cat==='camisas'?['S','M','L','XL'].map(t=>`<option>Talla ${t}</option>`).join(''):'<option>Estándar</option>';
+  $('#stage').innerHTML=SVG[actual.cat]+'<img id="dis" alt="">';
+  $('#file').value=''; $('#pMsg').textContent='';
+  abrir('mPers');
+}
+function leerImg(file){
+  return new Promise(res=>{
+    const fr=new FileReader();
+    fr.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,500/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=im.width*s;c.height=im.height*s;c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/png'))};im.src=fr.result};
+    fr.readAsDataURL(file);
+  });
+}
+$('#file').onchange=async e=>{
+  const f=e.target.files[0]; if(!f)return;
+  dis=await leerImg(f);
+  const d=$('#dis'), w=+$('#tam').value;
+  d.src=dis; d.style.display='block'; d.style.width=w+'px';
+  d.style.left=((260-w)/2)+'px'; d.style.top='90px';
+};
+$('#tam').oninput=e=>{$('#dis').style.width=e.target.value+'px'};
+const st=$('#stage');
+st.addEventListener('pointerdown',e=>{if(e.target.id!=='dis')return;drag={x:e.clientX,y:e.clientY,l:e.target.offsetLeft,t:e.target.offsetTop};e.target.setPointerCapture(e.pointerId)});
+st.addEventListener('pointermove',e=>{if(!drag)return;const d=$('#dis');d.style.left=(drag.l+e.clientX-drag.x)+'px';d.style.top=(drag.t+e.clientY-drag.y)+'px'});
+st.addEventListener('pointerup',()=>drag=null);
+st.addEventListener('pointercancel',()=>drag=null);
+
+function agregarPers(){
+  if(!actual)return;
+  carrito.push({pid:actual.id,nom:actual.name,precio:actual.precio,talla:$('#talla').value,diseno:dis||'',qty:1});
+  if(!save('mx_carrito',carrito)){carrito.pop();return}
+  cerrar('mPers'); renderCart(); abrir('mCart');
+}
+
+// ===== Carrito =====
+function renderCart(){
+  $('#nCart').textContent=carrito.reduce((a,i)=>a+i.qty,0);
+  $('#lista').innerHTML=carrito.length?carrito.map((i,k)=>`<div class="item">${i.diseno?`<img src="${i.diseno}" alt="">`:''}<div style="flex:1"><div>${esc(i.nom)}</div><div class="tag">${esc(i.talla)} · ${COP(i.precio)}${i.diseno?' · con diseño':''}</div></div><button class="mini" onclick="cant(${k},-1)">−</button> ${i.qty} <button class="mini" onclick="cant(${k},1)">+</button> <button class="mini" onclick="quitar(${k})">Quitar</button></div>`).join(''):'<p class="tag">Tu carrito está vacío.</p>';
+  const s=carrito.reduce((a,i)=>a+i.precio*i.qty,0), env=carrito.length?cfg.envio:0;
+  $('#sub').textContent=COP(s); $('#envT').textContent=COP(env); $('#tot').textContent=COP(s+env);
+}
+function cant(k,d){carrito[k].qty=Math.max(1,carrito[k].qty+d);save('mx_carrito',carrito);renderCart()}
+function quitar(k){carrito.splice(k,1);save('mx_carrito',carrito);renderCart()}
+
+function pedir(){
+  const v=['#cN','#cT','#cC','#cD'].map(s=>$(s).value.trim());
+  if(!carrito.length)return $('#cMsg').textContent='Tu carrito está vacío.';
+  if(v.some(x=>!x))return $('#cMsg').textContent='Completa nombre, celular, ciudad y dirección.';
+  const n=Date.now()%100000, total=carrito.reduce((a,i)=>a+i.precio*i.qty,0)+cfg.envio;
+  const ped={id:n,fecha:new Date().toLocaleString('es-CO'),cliente:v[0],celular:v[1],ciudad:v[2],direccion:v[3],pago:$('#cP').value,notas:$('#cO').value.trim(),items:carrito,total,estado:'Nuevo'};
+  pedidos.unshift(ped);
+  if(!save('mx_pedidos',pedidos)){pedidos.shift();return}
+  const lin=carrito.map(i=>`- ${i.qty} x ${i.nom} (${i.talla}) ${COP(i.precio)}${i.diseno?' [con diseño del cliente]':''}`).join('\n');
+  const txt=`Hola MATHISA, quiero hacer este pedido #${n}:\n${lin}\nEnvío: ${COP(cfg.envio)}\nTotal: ${COP(total)}\nNombre: ${v[0]}\nCelular: ${v[1]}\nCiudad: ${v[2]}\nDirección: ${v[3]}\nPago: ${ped.pago}${ped.notas?'\nNotas: '+ped.notas:''}`;
+  carrito=[]; save('mx_carrito',carrito); renderCart(); cerrar('mCart');
+  window.open(waLink(txt),'_blank');
+}
+
+// ===== Modales =====
+function abrir(id){$('#'+id).classList.add('on');renderCart()}
+function cerrar(id){$('#'+id).classList.remove('on')}
+
+// ===== Administrador =====
+$('#btnAdmin').onclick=()=>{abrir('mAdmin');$('#login').style.display=adminOk?'none':'block';$('#panel').style.display=adminOk?'block':'none';if(adminOk)tabAdm(tabA)};
+function entrar(){
+  if($('#u').value.trim()==='admin'&&$('#p').value===cfg.clave){adminOk=true;$('#login').style.display='none';$('#panel').style.display='block';tabAdm('pedidos')}
+  else $('#lMsg').textContent='Usuario o clave incorrectos.';
+}
+function tabAdm(t){
+  tabA=t;
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  ({pedidos:vPedidos,productos:vProductos,disenos:vDisenos,config:vConfig})[t]();
+}
+function vPedidos(){
+  $('#tab').innerHTML=pedidos.length?pedidos.map((p,k)=>`<div class="ped"><b>Pedido #${p.id}</b> · ${esc(p.fecha)} · <b>${COP(p.total)}</b>
+    <div>${esc(p.cliente)} · ${esc(p.celular)} · ${esc(p.ciudad)}</div>
+    <div class="tag">${esc(p.direccion)} · Pago: ${esc(p.pago)}${p.notas?' · Notas: '+esc(p.notas):''}</div>
+    <div class="tag">${p.items.map(i=>esc(`${i.qty} x ${i.nom} (${i.talla})`)+(i.diseno?' [diseño del cliente]':'')).join('<br>')}</div>
+    <select style="width:auto;margin-top:6px" onchange="estado(${k},this.value)">${['Nuevo','En producción','Enviado','Entregado'].map(s=>`<option ${s===p.estado?'selected':''}>${s}</option>`).join('')}</select>
+    <button class="mini" onclick="borrarPed(${k})">Eliminar</button></div>`).join(''):'<p class="tag">Aún no hay pedidos guardados en este navegador.</p>';
+}
+function estado(k,v){pedidos[k].estado=v;save('mx_pedidos',pedidos)}
+function borrarPed(k){if(confirm('¿Eliminar este pedido?')){pedidos.splice(k,1);save('mx_pedidos',pedidos);vPedidos()}}
+
+function vProductos(){
+  $('#tab').innerHTML=`${prods.map((p,k)=>`<div class="ped"><b>${esc(p.name)}</b> <span class="tag">(${esc(p.cat)}${p.sub?' · '+esc(p.sub):''})</span> · ${COP(p.precio)} <button class="mini" onclick="editP(${k})">Editar</button> <button class="mini" onclick="delP(${k})">Eliminar</button></div>`).join('')}
+    <h3 style="margin-top:16px">Agregar o editar producto</h3><div id="fp" class="fila"></div>`;
+  formP(null);
+}
+function formP(p){
+  p=p||{name:'',precio:'',cat:'camisas',sub:'',desc:'',img:''};
+  editId=p.id||null;
+  $('#fp').innerHTML=`<input id="fN" placeholder="Nombre del producto" value="${esc(p.name)}">
+    <input id="fPr" type="number" placeholder="Precio en COP" value="${p.precio}">
+    <select id="fC"><option value="camisas">Camisas</option><option value="termos">Termos</option><option value="cases">Cases</option></select>
+    <select id="fS"><option value="">Sin marca</option><option value="Xiaomi">Xiaomi</option><option value="iPhone">iPhone</option></select>
+    <input id="fD" placeholder="Descripción" value="${esc(p.desc)}">
+    <input id="fI" placeholder="Link de la foto (opcional)" value="${esc(p.img)}">
+    <button class="pri" onclick="guardarP()">Guardar producto</button>
+    <button onclick="vProductos()">Limpiar</button>`;
+  $('#fC').value=p.cat; $('#fS').value=p.sub;
+}
+function editP(k){formP(prods[k])}
+function guardarP(){
+  const o={name:$('#fN').value.trim(),precio:+$('#fPr').value,cat:$('#fC').value,sub:$('#fS').value,desc:$('#fD').value.trim(),img:$('#fI').value.trim()};
+  if(!o.name||!o.precio)return alert('Falta el nombre o el precio.');
+  if(editId)Object.assign(prods.find(p=>p.id===editId),o); else prods.push({...o,id:Date.now()});
+  save('mx_prods',prods); vProductos(); render();
+}
+function delP(k){if(confirm('¿Eliminar este producto?')){prods.splice(k,1);save('mx_prods',prods);vProductos();render()}}
+
+function vDisenos(){
+  const d=pedidos.flatMap(p=>p.items.filter(i=>i.diseno).map(i=>({c:p.cliente,cel:p.celular,pid:p.id,nom:i.nom,img:i.diseno})));
+  $('#tab').innerHTML=d.length?'<div class="grid">'+d.map(x=>`<div class="card"><div class="foto" style="height:160px"><img src="${x.img}" alt=""></div><div class="info"><div class="tag">${esc(x.nom)}</div><div>${esc(x.c)} · ${esc(x.cel)}</div><a class="btn" href="${x.img}" download="diseno-${x.pid}.png">Descargar diseño</a></div></div>`).join('')+'</div>':'<p class="tag">Aún no hay diseños de clientes en este navegador.</p>';
+}
+function vConfig(){
+  $('#tab').innerHTML=`<div class="fila"><input id="cW" placeholder="WhatsApp: 57 + número" value="${esc(cfg.wa)}"><input id="cE" type="number" placeholder="Costo de envío en COP" value="${cfg.envio}"><input id="cK" placeholder="Nueva clave (opcional)"></div>
+    <br><button class="pri" onclick="guardarCfg()">Guardar configuración</button>
+    <p class="tag">Usuario: admin. Cambia la clave antes de publicar la tienda.</p>`;
+}
+function guardarCfg(){
+  cfg.wa=$('#cW').value.replace(/\D/g,'')||cfg.wa;
+  cfg.envio=+$('#cE').value||0;
+  if($('#cK').value.trim())cfg.clave=$('#cK').value.trim();
+  if(!save('mx_cfg',cfg))return;
+  $('#wa').href=waLink('Hola MATHISA, quiero información');
+  renderCart(); alert('Configuración guardada.');
+}
+
+// ===== Inicio =====
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>ir(b.dataset.c));
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>tabAdm(b.dataset.t));
+$('#btnCart').onclick=()=>abrir('mCart');
+$('#wa').href=waLink('Hola MATHISA, quiero información');
+render();
+</script>
+</body>
+</html>
