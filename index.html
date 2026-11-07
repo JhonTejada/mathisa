@@ -36,9 +36,11 @@ select,input,textarea{background:#000;color:var(--t);border:1px solid #333;borde
 .x{position:absolute;top:8px;right:10px}
 .fila{display:flex;gap:10px;flex-wrap:wrap}
 .fila>*{flex:1;min-width:160px}
-.stage{position:relative;width:260px;height:300px;margin:auto;background:#000;border-radius:12px;overflow:hidden;touch-action:none}
+.stage{position:relative;width:340px;max-width:100%;aspect-ratio:17/20;margin:auto;background:#000;border-radius:12px;overflow:hidden;touch-action:none}
 .stage svg{position:absolute;inset:0;width:100%;height:100%}
-#dis{position:absolute;width:110px;cursor:move;touch-action:none;user-select:none;display:none}
+#dis{position:absolute;cursor:move;touch-action:none;user-select:none;display:none}
+.sel{background:var(--v);color:#000;font-weight:700}
+.lab{position:absolute;top:8px;left:0;right:0;text-align:center;color:var(--v);font-size:13px;font-weight:700;letter-spacing:2px;pointer-events:none}
 .item{display:flex;gap:10px;align-items:center;border-bottom:1px solid #222;padding:8px 0;flex-wrap:wrap}
 .item img{width:50px;height:50px;object-fit:contain;background:#000;border-radius:6px}
 .fl{position:fixed;right:16px;bottom:16px;z-index:30;width:58px;height:58px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.5)}
@@ -86,9 +88,17 @@ h2,h3{color:var(--v);margin-top:0}
   <h2 id="pNom"></h2>
   <div class="fila">
     <div>
+      <div style="display:flex;gap:6px;margin-bottom:8px"><button id="bF" class="sel" onclick="setLado('frente')">Frente</button><button id="bA" onclick="setLado('atras')">Atrás</button></div>
       <div class="stage" id="stage"></div>
-      <p class="tag">Arrastra tu diseño sobre el producto para moverlo. Usa la barra para cambiar su tamaño.</p>
-      <input type="range" min="40" max="250" value="110" id="tam">
+      <p class="tag">Arrastra tu diseño sobre el producto para moverlo.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,44px);gap:4px;justify-content:center;margin:8px 0">
+        <span></span><button onclick="mover(0,-3)">▲</button><span></span>
+        <button onclick="mover(-3,0)">◀</button><span></span><button onclick="mover(3,0)">▶</button>
+        <span></span><button onclick="mover(0,3)">▼</button><span></span>
+      </div>
+      <p class="tag">Mueve el diseño donde quieras: arrástralo o usa las flechas.</p>
+      <label class="tag">Tamaño del diseño<input type="range" min="5" max="100" value="40" id="tam"></label>
+      <div class="tag" style="display:flex;justify-content:space-between"><span>Pequeño</span><span>Grande</span></div>
     </div>
     <div>
       <label>1. Sube tu imagen o diseño<input type="file" accept="image/*" id="file" style="margin-top:6px"></label>
@@ -164,11 +174,11 @@ let cfg=load('mx_cfg',{wa:'573000000000',envio:15000,clave:'cambiar123'});
 let prods=load('mx_prods',DEF);
 let pedidos=load('mx_pedidos',[]);
 let carrito=load('mx_carrito',[]);
-let cat='camisas', sub='', actual=null, dis=null, drag=null, adminOk=false, tabA='pedidos', editId=null;
+let lados={frente:null,atras:null}, lado='frente', cat='camisas', sub='', actual=null, drag=null, adminOk=false, tabA='pedidos', editId=null;
 
 // Maniquí y siluetas genéricas (sin foto de modelo)
 const SVG={
- camisas:'<svg viewBox="0 0 200 280"><circle cx="100" cy="30" r="22" fill="#1c1c1c" stroke="#39ff14" stroke-width="2"/><path d="M60 65 L140 65 L175 95 L160 130 L150 115 L150 270 L50 270 L50 115 L40 130 L25 95 Z" fill="#1c1c1c" stroke="#39ff14" stroke-width="2"/></svg>',
+ camisas:'<svg viewBox="0 0 300 360"><path d="M110 40 Q150 22 190 40 L260 70 L290 140 L250 165 L235 135 L235 330 L65 330 L65 135 L50 165 L10 140 L40 70 Z" fill="#1c1c1c" stroke="#39ff14" stroke-width="2"/><path d="M110 40 Q150 75 190 40" fill="none" stroke="#39ff14" stroke-width="2"/></svg>',
  termos:'<svg viewBox="0 0 200 280"><rect x="55" y="20" width="90" height="250" rx="22" fill="#1c1c1c" stroke="#39ff14" stroke-width="2"/><rect x="60" y="20" width="80" height="30" rx="10" fill="#111" stroke="#39ff14"/></svg>',
  cases:'<svg viewBox="0 0 200 280"><rect x="50" y="10" width="100" height="260" rx="24" fill="#1c1c1c" stroke="#39ff14" stroke-width="2"/><circle cx="72" cy="36" r="10" fill="#111" stroke="#39ff14"/></svg>'
 };
@@ -187,10 +197,10 @@ function renderGrid(){
 
 // ===== Personalizar =====
 function personalizar(id){
-  actual=prods.find(p=>p.id===id); dis=null;
+  actual=prods.find(p=>p.id===id); lados={frente:null,atras:null};
   $('#pNom').textContent=actual.name;
   $('#talla').innerHTML=actual.cat==='camisas'?['S','M','L','XL'].map(t=>`<option>Talla ${t}</option>`).join(''):'<option>Estándar</option>';
-  $('#stage').innerHTML=SVG[actual.cat]+'<img id="dis" alt="">';
+  setLado('frente');
   $('#file').value=''; $('#pMsg').textContent='';
   abrir('mPers');
 }
@@ -201,23 +211,44 @@ function leerImg(file){
     fr.readAsDataURL(file);
   });
 }
+const DEF_POS={x:30,y:30,w:40};
+function setLado(l){
+  lado=l;
+  $('#bF').className=l==='frente'?'sel':''; $('#bA').className=l==='atras'?'sel':'';
+  const base=(actual.cat==='camisas'&&l==='atras')?SVG.camisas.replace('<path d="M110 40 Q150 75 190 40" fill="none" stroke="#39ff14" stroke-width="2"/>',''):SVG[actual.cat];
+  $('#stage').innerHTML=base+`<div class="lab">${l==='frente'?'FRENTE':'ESPALDA'}</div><img id="dis" alt="">`;
+  // posición libre: el cliente la elige
+  $('#tam').value=lados[l]?lados[l].w:40;
+  applyPos();
+}
+function applyPos(){
+  const d=$('#dis'), v=lados[lado];
+  if(!v){d.style.display='none';return}
+  d.src=v.img; d.style.display='block';
+  d.style.left=v.x+'%'; d.style.top=v.y+'%'; d.style.width=v.w+'%';
+}
+function mover(dx,dy){
+  if(!lados[lado])return $('#pMsg').textContent='Primero sube tu imagen.';
+  lados[lado].x=Math.min(100,Math.max(-50,lados[lado].x+dx));
+  lados[lado].y=Math.min(100,Math.max(-50,lados[lado].y+dy));
+  applyPos();
+}
 $('#file').onchange=async e=>{
   const f=e.target.files[0]; if(!f)return;
-  dis=await leerImg(f);
-  const d=$('#dis'), w=+$('#tam').value;
-  d.src=dis; d.style.display='block'; d.style.width=w+'px';
-  d.style.left=((260-w)/2)+'px'; d.style.top='90px';
+  const img=await leerImg(f);
+  lados[lado]={img,...DEF_POS};
+  $('#tam').value=DEF_POS.w; $('#pMsg').textContent=''; applyPos();
 };
-$('#tam').oninput=e=>{$('#dis').style.width=e.target.value+'px'};
+$('#tam').oninput=e=>{if(lados[lado]){lados[lado].w=+e.target.value;applyPos()}};
 const st=$('#stage');
-st.addEventListener('pointerdown',e=>{if(e.target.id!=='dis')return;drag={x:e.clientX,y:e.clientY,l:e.target.offsetLeft,t:e.target.offsetTop};e.target.setPointerCapture(e.pointerId)});
-st.addEventListener('pointermove',e=>{if(!drag)return;const d=$('#dis');d.style.left=(drag.l+e.clientX-drag.x)+'px';d.style.top=(drag.t+e.clientY-drag.y)+'px'});
+st.addEventListener('pointerdown',e=>{if(e.target.id!=='dis'||!lados[lado])return;drag={x:e.clientX,y:e.clientY,lx:lados[lado].x,ly:lados[lado].y};e.target.setPointerCapture(e.pointerId)});
+st.addEventListener('pointermove',e=>{if(!drag)return;lados[lado].x=drag.lx+(e.clientX-drag.x)/st.clientWidth*100;lados[lado].y=drag.ly+(e.clientY-drag.y)/st.clientHeight*100;applyPos()});
 st.addEventListener('pointerup',()=>drag=null);
 st.addEventListener('pointercancel',()=>drag=null);
 
 function agregarPers(){
   if(!actual)return;
-  carrito.push({pid:actual.id,nom:actual.name,precio:actual.precio,talla:$('#talla').value,diseno:dis||'',qty:1});
+  carrito.push({pid:actual.id,nom:actual.name,precio:actual.precio,talla:$('#talla').value,diseno:(lados.frente||lados.atras)?{frente:lados.frente,atras:lados.atras}:null,qty:1});
   if(!save('mx_carrito',carrito)){carrito.pop();return}
   cerrar('mPers'); renderCart(); abrir('mCart');
 }
@@ -225,11 +256,13 @@ function agregarPers(){
 // ===== Carrito =====
 function renderCart(){
   $('#nCart').textContent=carrito.reduce((a,i)=>a+i.qty,0);
-  $('#lista').innerHTML=carrito.length?carrito.map((i,k)=>`<div class="item">${i.diseno?`<img src="${i.diseno}" alt="">`:''}<div style="flex:1"><div>${esc(i.nom)}</div><div class="tag">${esc(i.talla)} · ${COP(i.precio)}${i.diseno?' · con diseño':''}</div></div><button class="mini" onclick="cant(${k},-1)">−</button> ${i.qty} <button class="mini" onclick="cant(${k},1)">+</button> <button class="mini" onclick="quitar(${k})">Quitar</button></div>`).join(''):'<p class="tag">Tu carrito está vacío.</p>';
+  $('#lista').innerHTML=carrito.length?carrito.map((i,k)=>`<div class="item">${thumbs(i.diseno)}<div style="flex:1"><div>${esc(i.nom)}</div><div class="tag">${esc(i.talla)} · ${COP(i.precio)}${i.diseno?' · con diseño':''}</div></div><button class="mini" onclick="cant(${k},-1)">−</button> ${i.qty} <button class="mini" onclick="cant(${k},1)">+</button> <button class="mini" onclick="quitar(${k})">Quitar</button></div>`).join(''):'<p class="tag">Tu carrito está vacío.</p>';
   const s=carrito.reduce((a,i)=>a+i.precio*i.qty,0), env=carrito.length?cfg.envio:0;
   $('#sub').textContent=COP(s); $('#envT').textContent=COP(env); $('#tot').textContent=COP(s+env);
 }
 function cant(k,d){carrito[k].qty=Math.max(1,carrito[k].qty+d);save('mx_carrito',carrito);renderCart()}
+function thumbs(d){if(!d||typeof d!=='object')return '';return ['frente','atras'].filter(k=>d[k]).map(k=>`<img src="${d[k].img}" alt="" title="${k}">`).join('')}
+function posTxt(d){if(!d||typeof d!=='object')return '';return ['frente','atras'].filter(k=>d[k]).map(k=>`${k}: izquierda ${Math.round(d[k].x)}%, arriba ${Math.round(d[k].y)}%, tamaño ${Math.round(d[k].w)}%`).join('; ')}
 function quitar(k){carrito.splice(k,1);save('mx_carrito',carrito);renderCart()}
 
 function pedir(){
@@ -240,7 +273,7 @@ function pedir(){
   const ped={id:n,fecha:new Date().toLocaleString('es-CO'),cliente:v[0],celular:v[1],ciudad:v[2],direccion:v[3],pago:$('#cP').value,notas:$('#cO').value.trim(),items:carrito,total,estado:'Nuevo'};
   pedidos.unshift(ped);
   if(!save('mx_pedidos',pedidos)){pedidos.shift();return}
-  const lin=carrito.map(i=>`- ${i.qty} x ${i.nom} (${i.talla}) ${COP(i.precio)}${i.diseno?' [con diseño del cliente]':''}`).join('\n');
+  const lin=carrito.map(i=>`- ${i.qty} x ${i.nom} (${i.talla}) ${COP(i.precio)}${i.diseno?' [con diseño del cliente] '+posTxt(i.diseno):''}`).join('\n');
   const txt=`Hola MATHISA, quiero hacer este pedido #${n}:\n${lin}\nEnvío: ${COP(cfg.envio)}\nTotal: ${COP(total)}\nNombre: ${v[0]}\nCelular: ${v[1]}\nCiudad: ${v[2]}\nDirección: ${v[3]}\nPago: ${ped.pago}${ped.notas?'\nNotas: '+ped.notas:''}`;
   carrito=[]; save('mx_carrito',carrito); renderCart(); cerrar('mCart');
   window.open(waLink(txt),'_blank');
@@ -265,7 +298,7 @@ function vPedidos(){
   $('#tab').innerHTML=pedidos.length?pedidos.map((p,k)=>`<div class="ped"><b>Pedido #${p.id}</b> · ${esc(p.fecha)} · <b>${COP(p.total)}</b>
     <div>${esc(p.cliente)} · ${esc(p.celular)} · ${esc(p.ciudad)}</div>
     <div class="tag">${esc(p.direccion)} · Pago: ${esc(p.pago)}${p.notas?' · Notas: '+esc(p.notas):''}</div>
-    <div class="tag">${p.items.map(i=>esc(`${i.qty} x ${i.nom} (${i.talla})`)+(i.diseno?' [diseño del cliente]':'')).join('<br>')}</div>
+    <div class="tag">${p.items.map(i=>esc(`${i.qty} x ${i.nom} (${i.talla})`)+(i.diseno?' [diseño del cliente] '+posTxt(i.diseno):'')).join('<br>')}</div>
     <select style="width:auto;margin-top:6px" onchange="estado(${k},this.value)">${['Nuevo','En producción','Enviado','Entregado'].map(s=>`<option ${s===p.estado?'selected':''}>${s}</option>`).join('')}</select>
     <button class="mini" onclick="borrarPed(${k})">Eliminar</button></div>`).join(''):'<p class="tag">Aún no hay pedidos guardados en este navegador.</p>';
 }
@@ -300,7 +333,7 @@ function guardarP(){
 function delP(k){if(confirm('¿Eliminar este producto?')){prods.splice(k,1);save('mx_prods',prods);vProductos();render()}}
 
 function vDisenos(){
-  const d=pedidos.flatMap(p=>p.items.filter(i=>i.diseno).map(i=>({c:p.cliente,cel:p.celular,pid:p.id,nom:i.nom,img:i.diseno})));
+  const d=pedidos.flatMap(p=>p.items.filter(i=>i.diseno&&typeof i.diseno==='object').flatMap(i=>['frente','atras'].filter(k=>i.diseno[k]).map(k=>({c:p.cliente,cel:p.celular,pid:p.id,nom:i.nom+' ('+k+')',img:i.diseno[k].img}))));
   $('#tab').innerHTML=d.length?'<div class="grid">'+d.map(x=>`<div class="card"><div class="foto" style="height:160px"><img src="${x.img}" alt=""></div><div class="info"><div class="tag">${esc(x.nom)}</div><div>${esc(x.c)} · ${esc(x.cel)}</div><a class="btn" href="${x.img}" download="diseno-${x.pid}.png">Descargar diseño</a></div></div>`).join('')+'</div>':'<p class="tag">Aún no hay diseños de clientes en este navegador.</p>';
 }
 function vConfig(){
