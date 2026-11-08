@@ -10,7 +10,7 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--n);color:var(--t)}
 header{position:sticky;top:0;z-index:20;background:var(--n);border-bottom:2px solid var(--v);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;flex-wrap:wrap}
-.logo{color:var(--v);font-weight:900;font-size:26px;letter-spacing:4px;text-shadow:0 0 12px rgba(57,255,20,.5)}
+.logo{color:var(--v);font-weight:900;font-size:26px;letter-spacing:4px;text-shadow:0 0 12px rgba(37,211,102,.5)}
 nav{display:flex;gap:6px;flex-wrap:wrap}
 button,.btn{background:var(--c);color:var(--t);border:1px solid #333;border-radius:8px;padding:9px 14px;font-size:15px;cursor:pointer;text-decoration:none;display:inline-block}
 button:hover{border-color:var(--v);color:var(--v)}
@@ -39,7 +39,7 @@ select,input,textarea{background:#000;color:var(--t);border:1px solid #333;borde
 .x{position:absolute;top:8px;right:10px}
 .fila{display:flex;gap:10px;flex-wrap:wrap}
 .fila>*{flex:1;min-width:160px}
-.stage{position:relative;width:340px;max-width:100%;aspect-ratio:17/20;margin:auto;background:#000;border-radius:12px;overflow:hidden;touch-action:none}
+.stage{position:relative;width:340px;max-width:100%;aspect-ratio:17/20;margin:auto;background:#2b2b2b;border-radius:12px;overflow:hidden;touch-action:none}
 .stage svg{position:absolute;inset:0;width:100%;height:100%}
 #dis{position:absolute;cursor:move;touch-action:none;user-select:none;display:none}
 .lab{position:absolute;top:8px;left:0;right:0;text-align:center;color:var(--v);font-size:13px;font-weight:700;letter-spacing:2px;pointer-events:none}
@@ -180,11 +180,11 @@ const waLink=t=>`https://wa.me/${cfg.whatsapp}?text=${encodeURIComponent(t)}`;
 const dTxt=d=>Object.entries(d).map(([k,v])=>`${k}: izquierda ${Math.round(v.x)}%, arriba ${Math.round(v.y)}%, tamaño ${Math.round(v.w)}%`).join('; ');
 
 const SVG={
- camisas:'<svg viewBox="0 0 300 360"><path d="M110 40 Q150 22 190 40 L260 70 L290 140 L250 165 L235 135 L235 330 L65 330 L65 135 L50 165 L10 140 L40 70 Z" fill="#1c1c1c" stroke="#39ff14" stroke-width="2"/><path d="M110 40 Q150 75 190 40" fill="none" stroke="#39ff14" stroke-width="2"/></svg>',
- termos:'<svg viewBox="0 0 200 280"><rect x="55" y="20" width="90" height="250" rx="22" fill="#1c1c1c" stroke="#39ff14" stroke-width="2"/><rect x="60" y="20" width="80" height="30" rx="10" fill="#111" stroke="#39ff14"/></svg>',
- cases:'<svg viewBox="0 0 200 280"><rect x="50" y="10" width="100" height="260" rx="24" fill="#1c1c1c" stroke="#39ff14" stroke-width="2"/><circle cx="72" cy="36" r="10" fill="#111" stroke="#39ff14"/></svg>'
+ camisas:'<svg viewBox="0 0 300 360"><path d="M110 40 Q150 22 190 40 L260 70 L290 140 L250 165 L235 135 L235 330 L65 330 L65 135 L50 165 L10 140 L40 70 Z" fill="#1c1c1c" stroke="#25D366" stroke-width="2"/><path d="M110 40 Q150 75 190 40" fill="none" stroke="#25D366" stroke-width="2"/></svg>',
+ termos:'<svg viewBox="0 0 200 280"><rect x="55" y="20" width="90" height="250" rx="22" fill="#1c1c1c" stroke="#25D366" stroke-width="2"/><rect x="60" y="20" width="80" height="30" rx="10" fill="#111" stroke="#25D366"/></svg>',
+ cases:'<svg viewBox="0 0 200 280"><rect x="50" y="10" width="100" height="260" rx="24" fill="#1c1c1c" stroke="#25D366" stroke-width="2"/><circle cx="72" cy="36" r="10" fill="#111" stroke="#25D366"/></svg>'
 };
-const COLLAR='<path d="M110 40 Q150 75 190 40" fill="none" stroke="#39ff14" stroke-width="2"/>';
+const COLLAR='<path d="M110 40 Q150 75 190 40" fill="none" stroke="#25D366" stroke-width="2"/>';
 
 const HEX={Negro:'#111111',Blanco:'#f2f2f2',Gris:'#6b6b6b',Azul:'#1e3a8a',Rojo:'#b91c1c',Verde:'#15803d',Beige:'#d6c7a1',Café:'#6f4e37'};
 let prods=[], cfg={whatsapp:'573000000000',envio:15000}, carrito=load('mx_carrito',[]);
@@ -206,13 +206,13 @@ async function cargar(){
 // ===== Catálogo =====
 function ir(c){cat=c;sub='';render()}
 function render(){
-  document.querySelectorAll('nav button').forEach(b=>b.style.borderColor=b.dataset.c===cat?'#39ff14':'#333');
+  document.querySelectorAll('nav button').forEach(b=>b.style.borderColor=b.dataset.c===cat?'#25D366':'#333');
   $('#filtros').innerHTML=cat==='cases'?`<select style="width:auto" onchange="sub=this.value;renderGrid()"><option value="">Todas las marcas</option><option value="Xiaomi">Xiaomi</option><option value="iPhone">iPhone</option></select>`:'';
   renderGrid(); renderCart();
 }
 function renderGrid(){
   const l=prods.filter(p=>p.cat===cat&&(!sub||p.sub===sub));
-  $('#grid').innerHTML=l.map(p=>`<div class="card"><div class="foto">${p.imagen?`<img src="${esc(p.imagen)}" alt="">`:esc(p.nombre[0])}</div><div class="info"><div>${esc(p.nombre)}</div>${p.sub?`<div class="tag">Marca: ${esc(p.sub)}</div>`:''}<div class="tag">${esc(p.descripcion)}</div>${p.colores?`<div class="tag">Colores: ${esc(p.colores)}</div>`:''}<div class="precio">${COP(p.precio)}</div><button class="pri" onclick="personalizar(${p.id})">Personalizar y comprar</button></div></div>`).join('')||'<p class="tag">No hay productos en esta categoría.</p>';
+  $('#grid').innerHTML=l.map(p=>`<div class="card"><div class="foto">${p.imagen?`<img src="${esc(p.imagen)}" alt="">`:esc(p.nombre[0])}</div><div class="info"><div>${esc(p.nombre)}</div>${p.sub?`<div class="tag">Marca: ${esc(p.sub)}</div>`:''}<div class="precio">${COP(p.precio)}</div><button class="pri" onclick="personalizar(${p.id})">Personalizar y comprar</button></div></div>`).join('')||'<p class="tag">No hay productos en esta categoría.</p>';
 }
 
 // ===== Personalizar =====
