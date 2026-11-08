@@ -186,7 +186,9 @@ const SVG={
 };
 const COLLAR='<path d="M110 40 Q150 75 190 40" fill="none" stroke="#25D366" stroke-width="2"/>';
 
-const HEX={Negro:'#111111',Blanco:'#f2f2f2',Gris:'#6b6b6b',Azul:'#1e3a8a',Rojo:'#b91c1c',Verde:'#15803d',Beige:'#d6c7a1',Café:'#6f4e37'};
+const HEX={'Azul alicia':'#f0f8ff','Blanco antiguo':'#faebd7',Aqua:'#00ffff',Aguamarina:'#7fffd4',Azur:'#f0ffff',Beige:'#f5f5dc',Bizcocho:'#ffe4c4',Negro:'#000000','Almendra claro':'#ffebcd',Azul:'#0000ff','Violeta azulado':'#8a2be2',Marrón:'#a52a2a',Madera:'#deb887','Azul cadete':'#5f9ea0','Verde chartreuse':'#7fff00',Chocolate:'#d2691e',Coral:'#ff7f50','Azul aciano':'#6495ed',Seda:'#fff8dc',Carmesí:'#dc143c',Cian:'#00ffff','Azul oscuro':'#00008b','Cian oscuro':'#008b8b','Dorado oscuro':'#b8860b','Gris oscuro':'#a9a9a9','Verde oscuro':'#006400','Caqui oscuro':'#bdb76b','Magenta oscuro':'#8b008b','Verde oliva oscuro':'#556b2f','Naranja oscuro':'#ff8c00','Orquídea oscura':'#9932cc','Rojo oscuro':'#8b0000','Salmón oscuro':'#e9967a','Verde mar oscuro':'#8fbc8f','Azul pizarra oscuro':'#483d8b','Gris pizarra oscuro':'#2f4f4f','Turquesa oscuro':'#00ced1','Violeta oscuro':'#9400d3','Rosa intenso':'#ff1493','Azul cielo intenso':'#00bfff','Gris tenue':'#696969','Azul brillante':'#1e90ff',Ladrillo:'#b22222','Blanco floral':'#fffaf0','Verde bosque':'#228b22',Fucsia:'#ff00ff','Gris humo':'#dcdcdc','Blanco fantasma':'#f8f8ff',Oro:'#ffd700','Vara de oro':'#daa520',Gris:'#808080',Verde:'#008000','Verde amarillento':'#adff2f',Rocío:'#f0fff0','Rosa fuerte':'#ff69b4','Rojo indio':'#cd5c5c',Índigo:'#4b0082',Marfil:'#fffff0',Caqui:'#f0e68c',Lavanda:'#e6e6fa','Lavanda rosada':'#fff0f5','Verde césped':'#7cfc00','Limón claro':'#fffacd','Azul claro':'#add8e6','Coral claro':'#f08080','Cian claro':'#e0ffff','Amarillo dorado claro':'#fafad2','Gris claro':'#d3d3d3','Verde claro':'#90ee90','Rosa claro':'#ffb6c1','Salmón claro':'#ffa07a','Verde mar claro':'#20b2aa','Azul cielo claro':'#87cefa','Gris pizarra claro':'#778899','Azul acero claro':'#b0c4de','Amarillo claro':'#ffffe0',Lima:'#00ff00','Verde lima':'#32cd32',Lino:'#faf0e6',Magenta:'#ff00ff',Granate:'#800000','Aguamarina medio':'#66cdaa','Azul medio':'#0000cd','Orquídea media':'#ba55d3','Morado medio':'#9370db','Verde mar medio':'#3cb371','Azul pizarra medio':'#7b68ee','Verde primavera medio':'#00fa9a','Turquesa medio':'#48d1cc','Rojo violeta medio':'#c71585','Azul medianoche':'#191970','Menta crema':'#f5fffa','Rosa neblina':'#ffe4e1',Mocasín:'#ffe4b5','Blanco navajo':'#ffdead','Azul marino':'#000080',Encaje:'#fdf5e6',Oliva:'#808000','Verde oliva':'#6b8e23',Naranja:'#ffa500','Rojo naranja':'#ff4500',Orquídea:'#da70d6','Dorado pálido':'#eee8aa','Verde pálido':'#98fb98','Turquesa pálido':'#afeeee','Rojo violeta pálido':'#db7093',Papaya:'#ffefd5',Durazno:'#ffdab9',Perú:'#cd853f',Rosa:'#ffc0cb',Ciruela:'#dda0dd',Púrpura:'#800080',Morado:'#663399',Rojo:'#ff0000','Marrón rosado':'#bc8f8f','Azul real':'#4169e1',Café:'#6f4e37','Marrón silla':'#8b4513',Salmón:'#fa8072','Marrón arena':'#f4a460','Verde mar':'#2e8b57',Concha:'#fff5ee',Siena:'#a0522d',Plata:'#c0c0c0','Azul cielo':'#87ceeb','Azul pizarra':'#6a5acd','Gris pizarra':'#708090',Nieve:'#fffafa','Verde primavera':'#00ff7f','Azul acero':'#4682b4',Bronceado:'#d2b48c','Verde azulado':'#008080',Cardo:'#d8bfd8',Tomate:'#ff6347',Turquesa:'#40e0d0',Violeta:'#ee82ee',Trigo:'#f5deb3',Blanco:'#ffffff','Blanco humo':'#f5f5f5',Amarillo:'#ffff00','Verde amarillo':'#9acd32',Mostaza:'#ca8a04',Dorado:'#d4a017',Plateado:'#c0c0c0',Vino:'#6b1d2a'};
+const sinAcentos=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+const hexDe=n=>{const m=String(n||'').match(/#[0-9a-fA-F]{6}/);if(m)return m[0];const k=Object.keys(HEX).find(c=>sinAcentos(c)===sinAcentos(n));return k?HEX[k]:'#1c1c1c'};
 let prods=[], cfg={whatsapp:'573000000000',envio:15000}, carrito=load('mx_carrito',[]);
 let cat='camisas', sub='', actual=null, lados={frente:null,atras:null}, lado='frente', drag=null;
 let sesion=null, tabA='pedidos', editId=null, adm=[];
@@ -229,7 +231,7 @@ function setLado(l){
   lado=l;
   $('#bF').className=l==='frente'?'sel':''; $('#bA').className=l==='atras'?'sel':'';
   let base=(actual.cat==='camisas'&&l==='atras')?SVG.camisas.replace(COLLAR,''):SVG[actual.cat];
-  base=base.split('#1c1c1c').join(HEX[$('#color').value]||'#1c1c1c');
+  base=base.split('#1c1c1c').join(hexDe($('#color').value));
   $('#stage').innerHTML=base+`<div class="lab">${l==='frente'?'FRENTE':'ESPALDA'}</div><img id="dis" alt="">`;
   $('#tam').value=lados[l]?lados[l].w:40;
   applyPos();
@@ -269,7 +271,7 @@ st.addEventListener('pointercancel',()=>drag=null);
 
 function agregarPers(){
   if(!actual)return;
-  carrito.push({pid:actual.id,nom:actual.nombre,precio:actual.precio,talla:$('#talla').value,color:$('#color').value,diseno:(lados.frente||lados.atras)?{frente:lados.frente,atras:lados.atras}:null,qty:1});
+  carrito.push({pid:actual.id,cat:actual.cat,nom:actual.nombre,precio:actual.precio,talla:$('#talla').value,color:$('#color').value,diseno:(lados.frente||lados.atras)?{frente:lados.frente,atras:lados.atras}:null,qty:1});
   if(!save('mx_carrito',carrito)){carrito.pop();return}
   cerrar('mPers'); renderCart(); abrir('mCart');
 }
@@ -294,6 +296,24 @@ async function subirDiseno(durl){
   return path;
 }
 
+const cargarImg=src=>new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=src});
+async function mockupPNG(item,l){
+  const W=680, H=800, d=item.diseno[l];
+  let svg=(item.cat==='camisas'&&l==='atras')?SVG.camisas.replace(COLLAR,''):SVG[item.cat||'camisas'];
+  svg=svg.split('#1c1c1c').join(hexDe(item.color));
+  const vb=svg.match(/viewBox="0 0 (\d+) (\d+)"/), vw=+vb[1], vh=+vb[2];
+  const s=Math.min(W/vw,H/vh), bw=vw*s, bh=vh*s;
+  const base=await cargarImg('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg));
+  const dis=await cargarImg(d.img);
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  const g=c.getContext('2d');
+  g.fillStyle='#2b2b2b'; g.fillRect(0,0,W,H);
+  g.drawImage(base,(W-bw)/2,(H-bh)/2,bw,bh);
+  const w=d.w/100*W, h=w*dis.height/dis.width;
+  g.drawImage(dis,d.x/100*W,d.y/100*H,w,h);
+  return c.toDataURL('image/png');
+}
+
 async function pedir(){
   const v=['#cN','#cT','#cC','#cD'].map(s=>$(s).value.trim());
   if(!carrito.length)return msg('Tu carrito está vacío.');
@@ -305,7 +325,11 @@ async function pedir(){
       let d=null;
       if(i.diseno){
         d={};
-        for(const k of ['frente','atras']){const g=i.diseno[k]; if(g) d[k]={path:await subirDiseno(g.img),x:g.x,y:g.y,w:g.w}}
+        for(const k of ['frente','atras']){
+          const g=i.diseno[k]; if(!g) continue;
+          const vista=await mockupPNG(i,k);
+          d[k]={path:await subirDiseno(g.img),mockup:await subirDiseno(vista),x:g.x,y:g.y,w:g.w};
+        }
       }
       items.push({nombre:i.nom,talla:i.talla,color:i.color||'',precio:i.precio,cantidad:i.qty,diseno:d&&Object.keys(d).length?d:null});
     }
@@ -333,7 +357,7 @@ $('#logo').onclick=()=>{
   toques++; clearTimeout(tTimer);
   tTimer=setTimeout(()=>toques=0,1500);
   $('#logo').animate([{transform:'scale(1)'},{transform:'scale(1.12) rotate(-4deg)'},{transform:'scale(1)'}],{duration:300});
-  if(toques>=3){toques=0;abrirZona()}
+  if(toques>=5){toques=0;abrirZona()}
 };
 async function abrirZona(){
   abrir('mAdmin');
@@ -416,12 +440,12 @@ async function vDisenos(){
   (data||[]).forEach(p=>p.items.forEach(i=>{if(i.diseno)Object.entries(i.diseno).forEach(([k,v])=>lista.push({p,i,k,v}))}));
   if(!lista.length){$('#tab').innerHTML='<p class="tag">Aún no hay diseños de clientes.</p>';return}
   $('#tab').innerHTML='<div class="grid" id="gd"></div>';
+  const url=async path=>{if(!path)return null;const {data:s}=await sb.storage.from('disenos').createSignedUrl(path,3600);return s?s.signedUrl:null};
   for(const x of lista){
-    const {data:s}=await sb.storage.from('disenos').createSignedUrl(x.v.path,3600);
-    $('#gd').insertAdjacentHTML('beforeend',`<div class="card"><div class="foto" style="height:160px">${s?`<img src="${s.signedUrl}" alt="">`:''}</div><div class="info"><div class="tag">${esc(x.i.nombre)} · ${esc(x.k)}</div><div>${esc(x.p.cliente)} · ${esc(x.p.celular)}</div><div class="tag">${esc(x.p.codigo)} · ${esc(dTxt({[x.k]:x.v}))}</div>${s?`<a class="btn" href="${s.signedUrl}" target="_blank" rel="noopener">Abrir diseño</a>`:''}</div></div>`);
+    const vista=await url(x.v.mockup), original=await url(x.v.path);
+    $('#gd').insertAdjacentHTML('beforeend',`<div class="card"><div class="foto" style="height:260px">${vista?`<img src="${vista}" alt="">`:'Sin vista'}</div><div class="info"><div><b>${esc(x.p.codigo)}</b> · ${esc(x.i.nombre)} · ${esc(x.k)}</div><div>${esc(x.p.cliente)} · ${esc(x.p.celular)}</div><div class="tag">${esc(x.i.talla)}${x.i.color?' · '+esc(x.i.color):''}</div><div class="tag">${esc(dTxt({[x.k]:x.v}))}</div>${vista?`<a class="btn" href="${vista}" target="_blank" rel="noopener">Ver o descargar vista</a>`:''} ${original?`<a class="btn" href="${original}" target="_blank" rel="noopener">Ver diseño original</a>`:''}</div></div>`);
   }
 }
-
 async function vConfig(){
   $('#tab').innerHTML=`<div class="fila"><input id="cW" placeholder="WhatsApp: 57 + número" value="${esc(cfg.whatsapp)}"><input id="cE" type="number" placeholder="Costo de envío en COP" value="${cfg.envio}"></div><br><button class="pri" onclick="guardarCfg()">Guardar configuración</button>`;
 }
