@@ -333,7 +333,7 @@ $('#logo').onclick=()=>{
   toques++; clearTimeout(tTimer);
   tTimer=setTimeout(()=>toques=0,1500);
   $('#logo').animate([{transform:'scale(1)'},{transform:'scale(1.12) rotate(-4deg)'},{transform:'scale(1)'}],{duration:300});
-  if(toques>=5){toques=0;abrirZona()}
+  if(toques>=3){toques=0;abrirZona()}
 };
 async function abrirZona(){
   abrir('mAdmin');
