@@ -57,7 +57,7 @@ h2,h3{color:var(--v);margin-top:0}
 </head>
 <body>
 <header>
-  <img src="logo.png" alt="MATHISA" style="height:88px;width:auto;display:block">
+  <img id="logo" src="logo.png" alt="MATHISA" style="height:88px;width:auto;display:block;cursor:pointer">
   <nav>
     <button data-c="camisas">Camisas</button>
     <button data-c="termos">Termos</button>
@@ -65,7 +65,7 @@ h2,h3{color:var(--v);margin-top:0}
   </nav>
   <div style="display:flex;gap:8px">
     <button id="btnCart">🛒 Carrito<span class="badge" id="nCart">0</span></button>
-    <button id="btnAdmin">Admin</button>
+    
   </div>
 </header>
 
@@ -146,14 +146,14 @@ h2,h3{color:var(--v);margin-top:0}
 <div class="modal" id="mAdmin"><div class="caja" style="max-width:960px">
   <button class="x" onclick="cerrar('mAdmin')">✕</button>
   <div id="login">
-    <h2>Entrar como administrador</h2>
-    <input id="u" type="email" placeholder="Correo del administrador"><br><br>
+    <h2>🐻 Zona del equipo MATHISA</h2>
+    <input id="u" type="email" placeholder="Correo del equipo"><br><br>
     <input id="p" type="password" placeholder="Clave"><br><br>
     <button class="pri" onclick="entrar()">Entrar</button>
     <div class="msg" id="lMsg"></div>
   </div>
   <div id="panel" style="display:none">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><h2>Panel administrador</h2><button onclick="salir()">Cerrar sesión</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><h2>Panel del equipo</h2><button onclick="salir()">Cerrar sesión</button></div>
     <div class="tabs">
       <button data-t="pedidos">Pedidos</button>
       <button data-t="clientes">Clientes</button>
@@ -328,11 +328,18 @@ function abrir(id){$('#'+id).classList.add('on');renderCart()}
 function cerrar(id){$('#'+id).classList.remove('on')}
 
 // ===== Administrador =====
-$('#btnAdmin').onclick=async()=>{
+let toques=0, tTimer=null;
+$('#logo').onclick=()=>{
+  toques++; clearTimeout(tTimer);
+  tTimer=setTimeout(()=>toques=0,1500);
+  $('#logo').animate([{transform:'scale(1)'},{transform:'scale(1.12) rotate(-4deg)'},{transform:'scale(1)'}],{duration:300});
+  if(toques>=5){toques=0;abrirZona()}
+};
+async function abrirZona(){
   abrir('mAdmin');
   sesion=(await sb.auth.getSession()).data.session;
   mostrarAdmin();
-};
+}
 function mostrarAdmin(){
   $('#login').style.display=sesion?'none':'block';
   $('#panel').style.display=sesion?'block':'none';
