@@ -6,29 +6,29 @@
 <title>MATHISA</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
 <style>
-:root{--n:#0a0a0a;--c:#151515;--v:#25D366;--t:#f2f2f2;--g:#9a9a9a}
+:root{--n:#1f1f1f;--c:#2a2a2a;--v:#bdb5a8;--t:#e8e8e8;--g:#9a9a9a}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--n);color:var(--t)}
 header{position:sticky;top:0;z-index:20;background:var(--n);border-bottom:2px solid var(--v);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;flex-wrap:wrap}
-.logo{color:var(--v);font-weight:900;font-size:26px;letter-spacing:4px;text-shadow:0 0 12px rgba(37,211,102,.5)}
+.logo{color:var(--v);font-weight:900;font-size:26px;letter-spacing:4px;text-shadow:none}
 nav{display:flex;gap:6px;flex-wrap:wrap}
 button,.btn{background:var(--c);color:var(--t);border:1px solid #333;border-radius:8px;padding:9px 14px;font-size:15px;cursor:pointer;text-decoration:none;display:inline-block}
 button:hover{border-color:var(--v);color:var(--v)}
 button:disabled{opacity:.5}
 .pri{background:var(--v);color:#000;border:none;font-weight:700}
-.pri:hover{color:#000;box-shadow:0 0 14px var(--v)}
+.pri:hover{color:#000;opacity:.9}
 .mini{padding:5px 9px}
 .sel{background:var(--v);color:#000;font-weight:700}
-.hero{text-align:center;padding:50px 20px;background:radial-gradient(circle at top,#0f2a0a,var(--n) 70%)}
+.hero{text-align:center;padding:50px 20px;background:var(--n)}
 .hero h1{font-size:34px;margin:0 0 10px;color:var(--v)}
 .hero p{color:var(--g);margin:0 0 20px}
 .wrap{max-width:1100px;margin:auto;padding:20px 14px}
 .filtros{margin-bottom:16px}
-select,input,textarea{background:#000;color:var(--t);border:1px solid #333;border-radius:8px;padding:9px;font-size:15px;width:100%}
+select,input,textarea{background:#1c1c1c;color:var(--t);border:1px solid #333;border-radius:8px;padding:9px;font-size:15px;width:100%}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
 .card{background:var(--c);border:1px solid #222;border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
 .card:hover{border-color:var(--v)}
-.foto{height:200px;background:#000;display:flex;align-items:center;justify-content:center;font-size:60px;color:var(--v);font-weight:900}
+.foto{height:200px;background:#1c1c1c;display:flex;align-items:center;justify-content:center;font-size:60px;color:var(--v);font-weight:900}
 .foto img{width:100%;height:100%;object-fit:cover}
 .info{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}
 .precio{color:var(--v);font-weight:800;font-size:20px}
@@ -44,7 +44,7 @@ select,input,textarea{background:#000;color:var(--t);border:1px solid #333;borde
 #dis{position:absolute;cursor:move;touch-action:none;user-select:none;display:none}
 .lab{position:absolute;top:8px;left:0;right:0;text-align:center;color:var(--v);font-size:13px;font-weight:700;letter-spacing:2px;pointer-events:none}
 .item{display:flex;gap:10px;align-items:center;border-bottom:1px solid #222;padding:8px 0;flex-wrap:wrap}
-.item img{width:50px;height:50px;object-fit:contain;background:#000;border-radius:6px}
+.item img{width:50px;height:50px;object-fit:contain;background:#1c1c1c;border-radius:6px}
 .fl{position:fixed;right:16px;bottom:16px;z-index:30;width:58px;height:58px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.5)}
 .fl svg{width:34px;height:34px}
 .badge{background:var(--v);color:#000;border-radius:50%;font-size:12px;min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;margin-left:4px}
@@ -157,11 +157,11 @@ const waLink=t=>`https://wa.me/${cfg.whatsapp}?text=${encodeURIComponent(t)}`;
 const dTxt=d=>Object.entries(d).map(([k,v])=>`${k}: izquierda ${Math.round(v.x)}%, arriba ${Math.round(v.y)}%, tamaño ${Math.round(v.w)}%`).join('; ');
 
 const SVG={
- camisas:'<svg viewBox="0 0 300 360"><path d="M110 40 Q150 22 190 40 L260 70 L290 140 L250 165 L235 135 L235 330 L65 330 L65 135 L50 165 L10 140 L40 70 Z" fill="#1c1c1c" stroke="#25D366" stroke-width="2"/><path d="M110 40 Q150 75 190 40" fill="none" stroke="#25D366" stroke-width="2"/></svg>',
- termos:'<svg viewBox="0 0 200 280"><rect x="55" y="20" width="90" height="250" rx="22" fill="#1c1c1c" stroke="#25D366" stroke-width="2"/><rect x="60" y="20" width="80" height="30" rx="10" fill="#111" stroke="#25D366"/></svg>',
- cases:'<svg viewBox="0 0 200 280"><rect x="50" y="10" width="100" height="260" rx="24" fill="#1c1c1c" stroke="#25D366" stroke-width="2"/><circle cx="72" cy="36" r="10" fill="#111" stroke="#25D366"/></svg>'
+ camisas:'<svg viewBox="0 0 300 360"><path d="M110 40 Q150 22 190 40 L260 70 L290 140 L250 165 L235 135 L235 330 L65 330 L65 135 L50 165 L10 140 L40 70 Z" fill="#1c1c1c" stroke="#bdb5a8" stroke-width="2"/><path d="M110 40 Q150 75 190 40" fill="none" stroke="#bdb5a8" stroke-width="2"/></svg>',
+ termos:'<svg viewBox="0 0 200 280"><rect x="55" y="20" width="90" height="250" rx="22" fill="#1c1c1c" stroke="#bdb5a8" stroke-width="2"/><rect x="60" y="20" width="80" height="30" rx="10" fill="#111" stroke="#bdb5a8"/></svg>',
+ cases:'<svg viewBox="0 0 200 280"><rect x="50" y="10" width="100" height="260" rx="24" fill="#1c1c1c" stroke="#bdb5a8" stroke-width="2"/><circle cx="72" cy="36" r="10" fill="#111" stroke="#bdb5a8"/></svg>'
 };
-const COLLAR='<path d="M110 40 Q150 75 190 40" fill="none" stroke="#25D366" stroke-width="2"/>';
+const COLLAR='<path d="M110 40 Q150 75 190 40" fill="none" stroke="#bdb5a8" stroke-width="2"/>';
 
 const HEX={'Azul alicia':'#f0f8ff','Blanco antiguo':'#faebd7',Aqua:'#00ffff',Aguamarina:'#7fffd4',Azur:'#f0ffff',Beige:'#f5f5dc',Bizcocho:'#ffe4c4',Negro:'#000000','Almendra claro':'#ffebcd',Azul:'#0000ff','Violeta azulado':'#8a2be2',Marrón:'#a52a2a',Madera:'#deb887','Azul cadete':'#5f9ea0','Verde chartreuse':'#7fff00',Chocolate:'#d2691e',Coral:'#ff7f50','Azul aciano':'#6495ed',Seda:'#fff8dc',Carmesí:'#dc143c',Cian:'#00ffff','Azul oscuro':'#00008b','Cian oscuro':'#008b8b','Dorado oscuro':'#b8860b','Gris oscuro':'#a9a9a9','Verde oscuro':'#006400','Caqui oscuro':'#bdb76b','Magenta oscuro':'#8b008b','Verde oliva oscuro':'#556b2f','Naranja oscuro':'#ff8c00','Orquídea oscura':'#9932cc','Rojo oscuro':'#8b0000','Salmón oscuro':'#e9967a','Verde mar oscuro':'#8fbc8f','Azul pizarra oscuro':'#483d8b','Gris pizarra oscuro':'#2f4f4f','Turquesa oscuro':'#00ced1','Violeta oscuro':'#9400d3','Rosa intenso':'#ff1493','Azul cielo intenso':'#00bfff','Gris tenue':'#696969','Azul brillante':'#1e90ff',Ladrillo:'#b22222','Blanco floral':'#fffaf0','Verde bosque':'#228b22',Fucsia:'#ff00ff','Gris humo':'#dcdcdc','Blanco fantasma':'#f8f8ff',Oro:'#ffd700','Vara de oro':'#daa520',Gris:'#808080',Verde:'#008000','Verde amarillento':'#adff2f',Rocío:'#f0fff0','Rosa fuerte':'#ff69b4','Rojo indio':'#cd5c5c',Índigo:'#4b0082',Marfil:'#fffff0',Caqui:'#f0e68c',Lavanda:'#e6e6fa','Lavanda rosada':'#fff0f5','Verde césped':'#7cfc00','Limón claro':'#fffacd','Azul claro':'#add8e6','Coral claro':'#f08080','Cian claro':'#e0ffff','Amarillo dorado claro':'#fafad2','Gris claro':'#d3d3d3','Verde claro':'#90ee90','Rosa claro':'#ffb6c1','Salmón claro':'#ffa07a','Verde mar claro':'#20b2aa','Azul cielo claro':'#87cefa','Gris pizarra claro':'#778899','Azul acero claro':'#b0c4de','Amarillo claro':'#ffffe0',Lima:'#00ff00','Verde lima':'#32cd32',Lino:'#faf0e6',Magenta:'#ff00ff',Granate:'#800000','Aguamarina medio':'#66cdaa','Azul medio':'#0000cd','Orquídea media':'#ba55d3','Morado medio':'#9370db','Verde mar medio':'#3cb371','Azul pizarra medio':'#7b68ee','Verde primavera medio':'#00fa9a','Turquesa medio':'#48d1cc','Rojo violeta medio':'#c71585','Azul medianoche':'#191970','Menta crema':'#f5fffa','Rosa neblina':'#ffe4e1',Mocasín:'#ffe4b5','Blanco navajo':'#ffdead','Azul marino':'#000080',Encaje:'#fdf5e6',Oliva:'#808000','Verde oliva':'#6b8e23',Naranja:'#ffa500','Rojo naranja':'#ff4500',Orquídea:'#da70d6','Dorado pálido':'#eee8aa','Verde pálido':'#98fb98','Turquesa pálido':'#afeeee','Rojo violeta pálido':'#db7093',Papaya:'#ffefd5',Durazno:'#ffdab9',Perú:'#cd853f',Rosa:'#ffc0cb',Ciruela:'#dda0dd',Púrpura:'#800080',Morado:'#663399',Rojo:'#ff0000','Marrón rosado':'#bc8f8f','Azul real':'#4169e1',Café:'#6f4e37','Marrón silla':'#8b4513',Salmón:'#fa8072','Marrón arena':'#f4a460','Verde mar':'#2e8b57',Concha:'#fff5ee',Siena:'#a0522d',Plata:'#c0c0c0','Azul cielo':'#87ceeb','Azul pizarra':'#6a5acd','Gris pizarra':'#708090',Nieve:'#fffafa','Verde primavera':'#00ff7f','Azul acero':'#4682b4',Bronceado:'#d2b48c','Verde azulado':'#008080',Cardo:'#d8bfd8',Tomate:'#ff6347',Turquesa:'#40e0d0',Violeta:'#ee82ee',Trigo:'#f5deb3',Blanco:'#ffffff','Blanco humo':'#f5f5f5',Amarillo:'#ffff00','Verde amarillo':'#9acd32',Mostaza:'#ca8a04',Dorado:'#d4a017',Plateado:'#c0c0c0',Vino:'#6b1d2a'};
 const sinAcentos=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
@@ -185,7 +185,7 @@ async function cargar(){
 // ===== Catálogo =====
 function ir(c){cat=c;sub='';render()}
 function render(){
-  document.querySelectorAll('nav button').forEach(b=>b.style.borderColor=b.dataset.c===cat?'#25D366':'#333');
+  document.querySelectorAll('nav button').forEach(b=>b.style.borderColor=b.dataset.c===cat?'#bdb5a8':'#333');
   $('#filtros').innerHTML=cat==='cases'?`<select style="width:auto" onchange="sub=this.value;renderGrid()"><option value="">Todas las marcas</option><option value="Xiaomi">Xiaomi</option><option value="iPhone">iPhone</option></select>`:'';
   renderGrid(); renderCart();
 }
