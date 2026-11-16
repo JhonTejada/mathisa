@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>MATHISA · Equipo</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
+<style>
+:root{--n:#0a0a0a;--c:#151515;--v:#25D366;--t:#f2f2f2;--g:#9a9a9a}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--n);color:var(--t)}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:2px solid var(--v);flex-wrap:wrap}
+.logo{color:var(--v);font-weight:900;font-size:22px;letter-spacing:4px}
+.wrap{max-width:1000px;margin:auto;padding:20px 14px}
+.caja{background:var(--c);border:1px solid var(--v);border-radius:14px;padding:20px}
+button,.btn{background:var(--c);color:var(--t);border:1px solid #333;border-radius:8px;padding:9px 14px;font-size:15px;cursor:pointer;text-decoration:none;display:inline-block}
+button:hover{border-color:var(--v);color:var(--v)}
+.pri{background:var(--v);color:#000;border:none;font-weight:700}
+.pri:hover{color:#000}
+.mini{padding:5px 9px}
+select,input,textarea{background:#000;color:var(--t);border:1px solid #333;border-radius:8px;padding:9px;font-size:15px;width:100%}
+.fila{display:flex;gap:10px;flex-wrap:wrap}
+.fila>*{flex:1;min-width:160px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button.on{background:var(--v);color:#000}
+.ped{border:1px solid #333;border-radius:10px;padding:12px;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.card{background:var(--c);border:1px solid #222;border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.foto{height:200px;background:#2b2b2b;display:flex;align-items:center;justify-content:center;color:var(--g)}
+.foto img{width:100%;height:100%;object-fit:contain}
+.info{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.tag{font-size:13px;color:var(--g)}
+.msg{color:#ff6b6b;font-size:14px;min-height:18px;margin-top:8px}
+h2,h3{color:var(--v);margin-top:0}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">MATHISA</div>
+  <span class="tag">Panel del equipo</span>
+</header>
+
+<main class="wrap">
+  <div id="login" class="caja" style="max-width:420px;margin:30px auto">
+    <h2>🐻 Zona del equipo MATHISA</h2>
+    <input id="u" type="email" placeholder="Correo del equipo"><br><br>
+    <input id="p" type="password" placeholder="Clave"><br><br>
+    <button class="pri" onclick="entrar()">Entrar</button>
+    <div class="msg" id="lMsg"></div>
+  </div>
+
+  <div id="panel" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <h2>Panel del equipo</h2>
+      <button onclick="salir()">Cerrar sesión</button>
+    </div>
+    <div class="tabs">
+      <button data-t="pedidos">Pedidos</button>
+      <button data-t="clientes">Clientes</button>
+      <button data-t="productos">Productos</button>
+      <button data-t="disenos">Diseños</button>
+      <button data-t="config">Configuración</button>
+    </div>
+    <div id="tab"></div>
+  </div>
+</main>
+
+<script>
+// ===== CONEXIÓN CON SUPABASE =====
+const SB_URL='https://mokrehkvurdtbmuyifaw.supabase.co';
+const SB_KEY='sb_publishable_GBsTtSu9cmw_Kj1J1N-qfA_qnuxR8Zj';
+const sb=supabase.createClient(SB_URL,SB_KEY);
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const COP=n=>'$'+Number(n).toLocaleString('es-CO');
+const dTxt=d=>Object.entries(d).map(([k,v])=>`${k}: izquierda ${Math.round(v.x)}%, arriba ${Math.round(v.y)}%, tamaño ${Math.round(v.w)}%`).join('; ');
+
+let cfg={whatsapp:'',envio:0}, sesion=null, tabA='pedidos', editId=null, adm=[];
+
+async function cargarCfg(){
+  const {data}=await sb.from('config').select('*');
+  (data||[]).forEach(r=>cfg[r.clave]=r.valor);
+  cfg.envio=+cfg.envio||0;
+}
+
+// ===== Acceso =====
+function mostrarAdmin(){
+  $('#login').style.display=sesion?'none':'block';
+  $('#panel').style.display=sesion?'block':'none';
+  if(sesion)tabAdm(tabA);
+}
+async function entrar(){
+  const {error}=await sb.auth.signInWithPassword({email:$('#u').value.trim(),password:$('#p').value});
+  if(error)return $('#lMsg').textContent='Correo o clave incorrectos.';
+  sesion=(await sb.auth.getSession()).data.session;
+  mostrarAdmin();
+}
+async function salir(){await sb.auth.signOut();sesion=null;mostrarAdmin()}
+function tabAdm(t){
+  tabA=t;
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  ({pedidos:vPedidos,clientes:vClientes,productos:vProductos,disenos:vDisenos,config:vConfig})[t]();
+}
+
+// ===== Pedidos =====
+async function vPedidos(){
+  const {data,error}=await sb.from('pedidos').select('*').order('creado',{ascending:false});
+  if(error)return $('#tab').textContent='Error: '+error.message;
+  $('#tab').innerHTML=data.length?data.map(p=>`<div class="ped"><b>${esc(p.codigo)}</b> · ${new Date(p.creado).toLocaleString('es-CO')} · <b>${COP(p.total)}</b>
+    <div>${esc(p.cliente)} · ${esc(p.celular)} · ${esc(p.ciudad)}</div>
+    <div class="tag">${esc(p.direccion)} · Pago: ${esc(p.pago)}${p.notas?' · Notas: '+esc(p.notas):''}</div>
+    <div class="tag">${p.items.map(i=>esc(`${i.cantidad} x ${i.nombre} (${i.talla}${i.color?', '+i.color:''})`)+(i.diseno?' · diseño: '+esc(dTxt(i.diseno)):'')).join('<br>')}</div>
+    <select style="width:auto;margin-top:6px" onchange="estado(${p.id},this.value)">${['Nuevo','En producción','Enviado','Entregado'].map(s=>`<option ${s===p.estado?'selected':''}>${s}</option>`).join('')}</select>
+    <button class="mini" onclick="borrarPed(${p.id})">Eliminar</button></div>`).join(''):'<p class="tag">Aún no hay pedidos.</p>';
+}
+async function estado(id,v){const {error}=await sb.from('pedidos').update({estado:v}).eq('id',id);if(error)alert('Error: '+error.message)}
+async function borrarPed(id){if(confirm('¿Eliminar este pedido?')){await sb.from('pedidos').delete().eq('id',id);vPedidos()}}
+
+// ===== Clientes =====
+async function vClientes(){
+  const {data}=await sb.from('pedidos').select('cliente,celular,ciudad,direccion,total,creado').order('creado',{ascending:false});
+  const m={};
+  (data||[]).forEach(p=>{const c=m[p.celular]||(m[p.celular]={nombre:p.cliente,celular:p.celular,ciudad:p.ciudad,direccion:p.direccion,pedidos:0,gastado:0,ultimo:p.creado});c.pedidos++;c.gastado+=p.total});
+  const l=Object.values(m);
+  $('#tab').innerHTML=l.length?`<p class="tag">${l.length} clientes</p>`+l.map(c=>`<div class="ped"><b>${esc(c.nombre)}</b> · ${esc(c.celular)} · ${esc(c.ciudad)}<div class="tag">${esc(c.direccion)}</div><div>Pedidos: ${c.pedidos} · Total comprado: ${COP(c.gastado)} · Último: ${new Date(c.ultimo).toLocaleDateString('es-CO')}</div></div>`).join(''):'<p class="tag">Aún no hay clientes.</p>';
+}
+
+// ===== Productos =====
+async function vProductos(){
+  const {data,error}=await sb.from('productos').select('*').order('id');
+  if(error)return $('#tab').textContent='Error: '+error.message;
+  adm=data;
+  $('#tab').innerHTML=data.map((p,k)=>`<div class="ped"><b>${esc(p.nombre)}</b> <span class="tag">(${esc(p.cat)}${p.sub?' · '+esc(p.sub):''})</span> · ${COP(p.precio)} <button class="mini" onclick="editP(${k})">Editar</button> <button class="mini" onclick="delP(${p.id})">Eliminar</button></div>`).join('')+`<h3 style="margin-top:16px">Agregar o editar producto</h3><div id="fp" class="fila"></div>`;
+  formP(null);
+}
+function formP(p){
+  p=p||{nombre:'',precio:'',cat:'camisas',sub:'',descripcion:'',imagen:'',colores:''};
+  editId=p.id||null;
+  $('#fp').innerHTML=`<input id="fN" placeholder="Nombre del producto" value="${esc(p.nombre)}">
+    <input id="fPr" type="number" placeholder="Precio en COP" value="${p.precio}">
+    <select id="fC"><option value="camisas">Camisas</option><option value="termos">Termos</option><option value="cases">Cases</option></select>
+    <select id="fS"><option value="">Sin marca</option><option value="Xiaomi">Xiaomi</option><option value="iPhone">iPhone</option></select>
+    <input id="fD" placeholder="Descripción (no se muestra al cliente)" value="${esc(p.descripcion)}">
+    <input id="fI" placeholder="Link de la foto (opcional)" value="${esc(p.imagen)}">
+    <input id="fCo" placeholder="Colores separados por coma" value="${esc(p.colores||'')}">
+    <button class="pri" onclick="guardarP()">Guardar producto</button>
+    <button onclick="vProductos()">Limpiar</button>`;
+  $('#fC').value=p.cat; $('#fS').value=p.sub||'';
+}
+function editP(k){formP(adm[k])}
+async function guardarP(){
+  const o={nombre:$('#fN').value.trim(),precio:+$('#fPr').value,cat:$('#fC').value,sub:$('#fS').value,descripcion:$('#fD').value.trim(),imagen:$('#fI').value.trim(),colores:$('#fCo').value.trim()};
+  if(!o.nombre||!o.precio)return alert('Falta el nombre o el precio.');
+  const r=editId?await sb.from('productos').update(o).eq('id',editId):await sb.from('productos').insert(o);
+  if(r.error)return alert('Error: '+r.error.message);
+  vProductos();
+}
+async function delP(id){if(confirm('¿Eliminar este producto?')){await sb.from('productos').delete().eq('id',id);vProductos()}}
+
+// ===== Diseños =====
+async function vDisenos(){
+  const {data}=await sb.from('pedidos').select('codigo,cliente,celular,items').order('creado',{ascending:false});
+  const lista=[];
+  (data||[]).forEach(p=>p.items.forEach(i=>{if(i.diseno)Object.entries(i.diseno).forEach(([k,v])=>lista.push({p,i,k,v}))}));
+  if(!lista.length){$('#tab').innerHTML='<p class="tag">Aún no hay diseños de clientes.</p>';return}
+  $('#tab').innerHTML='<div class="grid" id="gd"></div>';
+  const url=async path=>{if(!path)return null;const {data:s}=await sb.storage.from('disenos').createSignedUrl(path,3600);return s?s.signedUrl:null};
+  for(const x of lista){
+    const vista=await url(x.v.mockup), original=await url(x.v.path);
+    $('#gd').insertAdjacentHTML('beforeend',`<div class="card"><div class="foto" style="height:260px">${vista?`<img src="${vista}" alt="">`:'Sin vista'}</div><div class="info"><div><b>${esc(x.p.codigo)}</b> · ${esc(x.i.nombre)} · ${esc(x.k)}</div><div>${esc(x.p.cliente)} · ${esc(x.p.celular)}</div><div class="tag">${esc(x.i.talla)}${x.i.color?' · '+esc(x.i.color):''}</div><div class="tag">${esc(dTxt({[x.k]:x.v}))}</div>${vista?`<a class="btn" href="${vista}" target="_blank" rel="noopener">Ver o descargar vista</a>`:''} ${original?`<a class="btn" href="${original}" target="_blank" rel="noopener">Ver diseño original</a>`:''}</div></div>`);
+  }
+}
+
+// ===== Configuración =====
+async function vConfig(){
+  $('#tab').innerHTML=`<div class="fila"><input id="cW" placeholder="WhatsApp: 57 + número" value="${esc(cfg.whatsapp)}"><input id="cE" type="number" placeholder="Costo de envío en COP" value="${cfg.envio}"></div><br><button class="pri" onclick="guardarCfg()">Guardar configuración</button>`;
+}
+async function guardarCfg(){
+  const w=$('#cW').value.replace(/\D/g,''), e=+$('#cE').value||0;
+  const {error}=await sb.from('config').upsert([{clave:'whatsapp',valor:w},{clave:'envio',valor:String(e)}]);
+  if(error)return alert('Error: '+error.message);
+  await cargarCfg(); alert('Configuración guardada.');
+}
+
+// ===== Inicio =====
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>tabAdm(b.dataset.t));
+(async()=>{
+  sesion=(await sb.auth.getSession()).data.session;
+  await cargarCfg();
+  mostrarAdmin();
+})();
+</script>
+</body>
+</html>
