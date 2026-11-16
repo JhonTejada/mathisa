@@ -81,7 +81,7 @@ const COP=n=>'$'+Number(n).toLocaleString('es-CO');
 const dTxt=d=>Object.entries(d).map(([k,v])=>`${k}: izquierda ${Math.round(v.x)}%, arriba ${Math.round(v.y)}%, tamaño ${Math.round(v.w)}%`).join('; ');
 const waCli=(celular,texto)=>{let n=String(celular||'').replace(/\D/g,'');if(n.length===10)n='57'+n;return `https://wa.me/${n}?text=${encodeURIComponent(texto||'')}`};
 
-let cfg={whatsapp:'',envio:0}, sesion=null, tabA='inicio', editId=null, adm=[], pedidosCache=[];
+let cfg={whatsapp:'',envio:0}, sesion=null, tabA='inicio', editId=null, adm=[], pedidosCache=[], clientesCache=[];
 
 async function cargarCfg(){
   const {data}=await sb.from('config').select('*');
@@ -170,15 +170,22 @@ function exportarCSV(){
 
 // ===== Clientes =====
 async function vClientes(){
-  const {data,error}=await sb.from('pedidos').select('cliente,celular,ciudad,direccion,total,creado').order('creado',{ascending:false});
+  const {data,error}=await sb.from('pedidos').select('codigo,cliente,celular,ciudad,direccion,pago,total,estado,creado').order('creado',{ascending:false});
   if(error)return $('#tab').textContent='Error: '+error.message;
-  const m={};
-  (data||[]).forEach(p=>{const c=m[p.celular]||(m[p.celular]={nombre:p.cliente,celular:p.celular,ciudad:p.ciudad,direccion:p.direccion,pedidos:0,gastado:0,ultimo:p.creado});c.pedidos++;c.gastado+=p.total});
-  const l=Object.values(m);
-  $('#tab').innerHTML=l.length?`<p class="tag">${l.length} clientes</p>`+l.map(c=>`<div class="ped"><b>${esc(c.nombre)}</b> · ${esc(c.celular)} · ${esc(c.ciudad)}
-    <div class="tag">${esc(c.direccion)}</div>
-    <div>Pedidos: ${c.pedidos} · Total comprado: ${COP(c.gastado)} · Último: ${new Date(c.ultimo).toLocaleDateString('es-CO')}</div>
-    <a class="btn mini" style="margin-top:8px" href="${waCli(c.celular,'Hola '+c.nombre+', le escribimos de MATHISA.')}" target="_blank" rel="noopener">WhatsApp</a></div>`).join(''):'<p class="tag">Aún no hay clientes.</p>';
+  clientesCache=data||[];
+  $('#tab').innerHTML=clientesCache.length?`<div class="fila" style="margin-bottom:12px"><button onclick="exportarClientes()">Descargar clientes en Excel (CSV)</button></div><p class="tag">${clientesCache.length} pedidos</p>`+clientesCache.map(p=>`<div class="ped"><b>${esc(p.codigo)}</b> · ${new Date(p.creado).toLocaleDateString('es-CO')} · <b>${COP(p.total)}</b> · ${esc(p.estado)}
+    <div>${esc(p.cliente)} · ${esc(p.celular)} · ${esc(p.ciudad)}</div>
+    <div class="tag">${esc(p.direccion)}</div>
+    <a class="btn mini" style="margin-top:8px" href="${waCli(p.celular,'Hola '+p.cliente+', le escribimos de MATHISA sobre su pedido '+p.codigo+'.')}" target="_blank" rel="noopener">WhatsApp</a></div>`).join(''):'<p class="tag">Aún no hay pedidos.</p>';
+}
+function exportarClientes(){
+  const cab=['codigo_pedido','fecha','cliente','celular','ciudad','direccion','pago','total','estado'];
+  const filas=clientesCache.map(p=>[p.codigo,new Date(p.creado).toLocaleDateString('es-CO'),p.cliente,p.celular,p.ciudad,p.direccion,p.pago,p.total,p.estado]);
+  const csv=[cab,...filas].map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'}));
+  a.download='clientes-pedidos-mathisa.csv';
+  a.click();
 }
 
 // ===== Productos =====
