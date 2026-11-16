@@ -28,7 +28,7 @@ select,input,textarea{background:#1c1c1c;color:var(--t);border:1px solid #333;bo
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
 .card{background:var(--c);border:1px solid #222;border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
 .card:hover{border-color:var(--v)}
-.foto{height:200px;background:#1c1c1c;display:flex;align-items:center;justify-content:center;font-size:60px;color:var(--v);font-weight:900}
+.foto{height:200px;background:#2e2e2e;display:flex;align-items:center;justify-content:center;font-size:60px;color:var(--v);font-weight:900}
 .foto img{width:100%;height:100%;object-fit:cover}
 .info{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}
 .precio{color:var(--v);font-weight:800;font-size:20px}
@@ -53,6 +53,7 @@ select,input,textarea{background:#1c1c1c;color:var(--t);border:1px solid #333;bo
 .ped{border:1px solid #333;border-radius:10px;padding:12px;margin-bottom:10px}
 .msg{color:#ff6b6b;font-size:14px;min-height:18px;margin-top:8px}
 h2,h3{color:var(--v);margin-top:0}
+.seguir{max-width:1100px;margin:0 auto;padding:24px 14px;border-top:1px solid #333}
 </style>
 </head>
 <body>
@@ -80,6 +81,12 @@ h2,h3{color:var(--v);margin-top:0}
   <div class="grid" id="grid"><p class="tag">Cargando productos...</p></div>
 </main>
 
+<section class="seguir">
+  <h3>Sigue tu pedido</h3>
+  <p class="tag">Escribe el código que recibiste al confirmar tu compra. Ejemplo: MX-ABC123</p>
+  <div class="fila"><input id="codP" placeholder="Código de pedido"><button class="pri" onclick="seguir()">Ver estado</button></div>
+  <div id="resP" class="tag" style="margin-top:12px"></div>
+</section>
 <a class="fl" id="wa" target="_blank" rel="noopener" title="Escríbenos por WhatsApp">
   <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2z"/></svg>
 </a>
@@ -329,6 +336,17 @@ function abrir(id){$('#'+id).classList.add('on');renderCart()}
 function cerrar(id){$('#'+id).classList.remove('on')}
 
 // ===== Administrador =====
+// ===== Seguir pedido =====
+async function seguir(){
+  const c=$('#codP').value.trim();
+  if(!c)return $('#resP').textContent='Escribe tu código de pedido.';
+  const {data,error}=await sb.rpc('estado_pedido',{p_codigo:c});
+  if(error)return $('#resP').textContent='No se pudo consultar. Intenta de nuevo.';
+  if(!data||!data.length)return $('#resP').textContent='No encontramos ese código. Revísalo e intenta de nuevo.';
+  const p=data[0];
+  $('#resP').innerHTML=`Pedido <b>${esc(p.codigo)}</b> · Estado: <b>${esc(p.estado)}</b> · Fecha: ${new Date(p.creado).toLocaleDateString('es-CO')}`;
+}
+
 // ===== Inicio =====
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>ir(b.dataset.c));
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>tabAdm(b.dataset.t));
