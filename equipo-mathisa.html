@@ -10,37 +10,41 @@
 :root{--n:#1f1f1f;--c:#2a2a2a;--v:#bdb5a8;--t:#e8e8e8;--g:#9a9a9a}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--n);color:var(--t)}
+body::before{content:"";position:fixed;inset:0;background:url(logo.png) center/min(70vmin,600px) no-repeat;opacity:.08;pointer-events:none;z-index:0}
+header,main{position:relative;z-index:1}
 header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:2px solid var(--v);flex-wrap:wrap}
-.logo{color:var(--v);font-weight:900;font-size:22px;letter-spacing:4px}
 .wrap{max-width:1000px;margin:auto;padding:20px 14px}
 .caja{background:var(--c);border:1px solid var(--v);border-radius:14px;padding:20px}
-button,.btn{background:var(--c);color:var(--t);border:1px solid #333;border-radius:8px;padding:9px 14px;font-size:15px;cursor:pointer;text-decoration:none;display:inline-block}
+button,.btn{background:var(--c);color:var(--t);border:1px solid #444;border-radius:8px;padding:9px 14px;font-size:15px;cursor:pointer;text-decoration:none;display:inline-block}
 button:hover{border-color:var(--v);color:var(--v)}
 .pri{background:var(--v);color:#000;border:none;font-weight:700}
-.pri:hover{color:#000}
-.mini{padding:5px 9px}
-select,input,textarea{background:#1c1c1c;color:var(--t);border:1px solid #333;border-radius:8px;padding:9px;font-size:15px;width:100%}
+.pri:hover{color:#000;opacity:.9}
+.mini{padding:5px 9px;font-size:14px}
+select,input,textarea{background:#1c1c1c;color:var(--t);border:1px solid #444;border-radius:8px;padding:9px;font-size:15px;width:100%}
 .fila{display:flex;gap:10px;flex-wrap:wrap}
 .fila>*{flex:1;min-width:160px}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
 .tabs button.on{background:var(--v);color:#000}
-.ped{border:1px solid #333;border-radius:10px;padding:12px;margin-bottom:10px}
+.ped{border:1px solid #444;border-radius:10px;padding:12px;margin-bottom:10px;background:var(--c)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
-.card{background:var(--c);border:1px solid #222;border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
-.foto{height:200px;background:#2b2b2b;display:flex;align-items:center;justify-content:center;color:var(--g)}
+.grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.big{font-size:24px;font-weight:700;margin-top:6px}
+.card{background:var(--c);border:1px solid #444;border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.foto{height:260px;background:#151515;display:flex;align-items:center;justify-content:center;color:var(--g)}
 .foto img{width:100%;height:100%;object-fit:contain}
 .info{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}
 .tag{font-size:13px;color:var(--g)}
-.msg{color:#ff6b6b;font-size:14px;min-height:18px;margin-top:8px}
+.msg{color:#e08a8a;font-size:14px;min-height:18px;margin-top:8px}
 h2,h3{color:var(--v);margin-top:0}
-body::before{content:"";position:fixed;inset:0;background:url(logo.png) center/min(70vmin,600px) no-repeat;opacity:.08;pointer-events:none;z-index:0}
-header,main{position:relative;z-index:1}
 </style>
 </head>
 <body>
 <header>
   <img src="logo.png" alt="MATHISA" style="height:70px;width:auto;display:block">
-  <span class="tag">Panel del equipo</span>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <span class="tag">Panel del equipo</span>
+    <button id="btnSalir" style="display:none" onclick="salir()">Cerrar sesión</button>
+  </div>
 </header>
 
 <main class="wrap">
@@ -53,11 +57,8 @@ header,main{position:relative;z-index:1}
   </div>
 
   <div id="panel" style="display:none">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-      <h2>Panel del equipo</h2>
-      <button onclick="salir()">Cerrar sesión</button>
-    </div>
     <div class="tabs">
+      <button data-t="inicio">Inicio</button>
       <button data-t="pedidos">Pedidos</button>
       <button data-t="clientes">Clientes</button>
       <button data-t="productos">Productos</button>
@@ -78,8 +79,9 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const COP=n=>'$'+Number(n).toLocaleString('es-CO');
 const dTxt=d=>Object.entries(d).map(([k,v])=>`${k}: izquierda ${Math.round(v.x)}%, arriba ${Math.round(v.y)}%, tamaño ${Math.round(v.w)}%`).join('; ');
+const waCli=(celular,texto)=>{let n=String(celular||'').replace(/\D/g,'');if(n.length===10)n='57'+n;return `https://wa.me/${n}?text=${encodeURIComponent(texto||'')}`};
 
-let cfg={whatsapp:'',envio:0}, sesion=null, tabA='pedidos', editId=null, adm=[];
+let cfg={whatsapp:'',envio:0}, sesion=null, tabA='inicio', editId=null, adm=[], pedidosCache=[];
 
 async function cargarCfg(){
   const {data}=await sb.from('config').select('*');
@@ -91,6 +93,7 @@ async function cargarCfg(){
 function mostrarAdmin(){
   $('#login').style.display=sesion?'none':'block';
   $('#panel').style.display=sesion?'block':'none';
+  $('#btnSalir').style.display=sesion?'inline-block':'none';
   if(sesion)tabAdm(tabA);
 }
 async function entrar(){
@@ -103,30 +106,79 @@ async function salir(){await sb.auth.signOut();sesion=null;mostrarAdmin()}
 function tabAdm(t){
   tabA=t;
   document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  ({pedidos:vPedidos,clientes:vClientes,productos:vProductos,disenos:vDisenos,config:vConfig})[t]();
+  ({inicio:vInicio,pedidos:vPedidos,clientes:vClientes,productos:vProductos,disenos:vDisenos,config:vConfig})[t]();
+}
+
+// ===== Inicio: resumen =====
+async function vInicio(){
+  const {data,error}=await sb.from('pedidos').select('total,estado,creado');
+  if(error)return $('#tab').textContent='Error: '+error.message;
+  const total=data.reduce((a,p)=>a+p.total,0);
+  const nuevos=data.filter(p=>p.estado==='Nuevo').length;
+  const hoy=data.filter(p=>new Date(p.creado).toDateString()===new Date().toDateString()).length;
+  $('#tab').innerHTML=`<div class="grid3">
+    <div class="ped"><div class="tag">Ventas totales</div><div class="big">${COP(total)}</div></div>
+    <div class="ped"><div class="tag">Pedidos en total</div><div class="big">${data.length}</div></div>
+    <div class="ped"><div class="tag">Pedidos nuevos</div><div class="big">${nuevos}</div></div>
+    <div class="ped"><div class="tag">Pedidos de hoy</div><div class="big">${hoy}</div></div>
+  </div>`;
 }
 
 // ===== Pedidos =====
 async function vPedidos(){
   const {data,error}=await sb.from('pedidos').select('*').order('creado',{ascending:false});
   if(error)return $('#tab').textContent='Error: '+error.message;
-  $('#tab').innerHTML=data.length?data.map(p=>`<div class="ped"><b>${esc(p.codigo)}</b> · ${new Date(p.creado).toLocaleString('es-CO')} · <b>${COP(p.total)}</b>
+  pedidosCache=data;
+  $('#tab').innerHTML=`<div class="fila" style="margin-bottom:12px"><button onclick="exportarCSV()">Descargar pedidos en Excel (CSV)</button></div><div id="editor"></div>`+
+    (data.length?data.map((p,k)=>`<div class="ped"><b>${esc(p.codigo)}</b> · ${new Date(p.creado).toLocaleString('es-CO')} · <b>${COP(p.total)}</b>
     <div>${esc(p.cliente)} · ${esc(p.celular)} · ${esc(p.ciudad)}</div>
     <div class="tag">${esc(p.direccion)} · Pago: ${esc(p.pago)}${p.notas?' · Notas: '+esc(p.notas):''}</div>
     <div class="tag">${p.items.map(i=>esc(`${i.cantidad} x ${i.nombre} (${i.talla}${i.color?', '+i.color:''})`)+(i.diseno?' · diseño: '+esc(dTxt(i.diseno)):'')).join('<br>')}</div>
-    <select style="width:auto;margin-top:6px" onchange="estado(${p.id},this.value)">${['Nuevo','En producción','Enviado','Entregado'].map(s=>`<option ${s===p.estado?'selected':''}>${s}</option>`).join('')}</select>
-    <button class="mini" onclick="borrarPed(${p.id})">Eliminar</button></div>`).join(''):'<p class="tag">Aún no hay pedidos.</p>';
+    <div class="fila" style="margin-top:8px;align-items:center">
+      <select style="width:auto" onchange="estado(${p.id},this.value)">${['Nuevo','En producción','Enviado','Entregado'].map(s=>`<option ${s===p.estado?'selected':''}>${s}</option>`).join('')}</select>
+      <button class="mini" onclick="editarPed(${k})">Editar</button>
+      <a class="btn mini" href="${waCli(p.celular,'Hola '+p.cliente+', le escribimos de MATHISA sobre su pedido '+p.codigo+'.')}" target="_blank" rel="noopener">WhatsApp</a>
+      <button class="mini" onclick="borrarPed(${p.id})">Eliminar</button>
+    </div></div>`).join(''):'<p class="tag">Aún no hay pedidos.</p>');
 }
 async function estado(id,v){const {error}=await sb.from('pedidos').update({estado:v}).eq('id',id);if(error)alert('Error: '+error.message)}
-async function borrarPed(id){if(confirm('¿Eliminar este pedido?')){await sb.from('pedidos').delete().eq('id',id);vPedidos()}}
+async function borrarPed(id){if(confirm('¿Eliminar este pedido? No se puede recuperar.')){await sb.from('pedidos').delete().eq('id',id);vPedidos()}}
+function editarPed(k){
+  const p=pedidosCache[k];
+  $('#editor').innerHTML=`<div class="ped"><h3>Editar pedido ${esc(p.codigo)}</h3>
+    <div class="fila"><input id="eC" placeholder="Cliente" value="${esc(p.cliente)}"><input id="eT" placeholder="Celular" value="${esc(p.celular)}"></div><br>
+    <div class="fila"><input id="eCi" placeholder="Ciudad" value="${esc(p.ciudad)}"><input id="eD" placeholder="Dirección" value="${esc(p.direccion)}"></div><br>
+    <div class="fila"><input id="eTo" type="number" placeholder="Total" value="${p.total}"><input id="eN" placeholder="Notas" value="${esc(p.notas||'')}"></div><br>
+    <button class="pri" onclick="guardarPed(${p.id})">Guardar cambios</button> <button onclick="$('#editor').innerHTML=''">Cerrar</button></div>`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+async function guardarPed(id){
+  const o={cliente:$('#eC').value.trim(),celular:$('#eT').value.trim(),ciudad:$('#eCi').value.trim(),direccion:$('#eD').value.trim(),total:+$('#eTo').value,notas:$('#eN').value.trim()};
+  const {error}=await sb.from('pedidos').update(o).eq('id',id);
+  if(error)return alert('Error: '+error.message);
+  vPedidos();
+}
+function exportarCSV(){
+  const cab=['codigo','fecha','cliente','celular','ciudad','direccion','pago','total','estado','productos'];
+  const filas=pedidosCache.map(p=>[p.codigo,new Date(p.creado).toLocaleString('es-CO'),p.cliente,p.celular,p.ciudad,p.direccion,p.pago,p.total,p.estado,p.items.map(i=>`${i.cantidad} x ${i.nombre} (${i.talla}${i.color?', '+i.color:''})`).join(' | ')]);
+  const csv=[cab,...filas].map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'}));
+  a.download='pedidos-mathisa.csv';
+  a.click();
+}
 
 // ===== Clientes =====
 async function vClientes(){
-  const {data}=await sb.from('pedidos').select('cliente,celular,ciudad,direccion,total,creado').order('creado',{ascending:false});
+  const {data,error}=await sb.from('pedidos').select('cliente,celular,ciudad,direccion,total,creado').order('creado',{ascending:false});
+  if(error)return $('#tab').textContent='Error: '+error.message;
   const m={};
   (data||[]).forEach(p=>{const c=m[p.celular]||(m[p.celular]={nombre:p.cliente,celular:p.celular,ciudad:p.ciudad,direccion:p.direccion,pedidos:0,gastado:0,ultimo:p.creado});c.pedidos++;c.gastado+=p.total});
   const l=Object.values(m);
-  $('#tab').innerHTML=l.length?`<p class="tag">${l.length} clientes</p>`+l.map(c=>`<div class="ped"><b>${esc(c.nombre)}</b> · ${esc(c.celular)} · ${esc(c.ciudad)}<div class="tag">${esc(c.direccion)}</div><div>Pedidos: ${c.pedidos} · Total comprado: ${COP(c.gastado)} · Último: ${new Date(c.ultimo).toLocaleDateString('es-CO')}</div></div>`).join(''):'<p class="tag">Aún no hay clientes.</p>';
+  $('#tab').innerHTML=l.length?`<p class="tag">${l.length} clientes</p>`+l.map(c=>`<div class="ped"><b>${esc(c.nombre)}</b> · ${esc(c.celular)} · ${esc(c.ciudad)}
+    <div class="tag">${esc(c.direccion)}</div>
+    <div>Pedidos: ${c.pedidos} · Total comprado: ${COP(c.gastado)} · Último: ${new Date(c.ultimo).toLocaleDateString('es-CO')}</div>
+    <a class="btn mini" style="margin-top:8px" href="${waCli(c.celular,'Hola '+c.nombre+', le escribimos de MATHISA.')}" target="_blank" rel="noopener">WhatsApp</a></div>`).join(''):'<p class="tag">Aún no hay clientes.</p>';
 }
 
 // ===== Productos =====
@@ -134,7 +186,12 @@ async function vProductos(){
   const {data,error}=await sb.from('productos').select('*').order('id');
   if(error)return $('#tab').textContent='Error: '+error.message;
   adm=data;
-  $('#tab').innerHTML=data.map((p,k)=>`<div class="ped"><b>${esc(p.nombre)}</b> <span class="tag">(${esc(p.cat)}${p.sub?' · '+esc(p.sub):''})</span> · ${COP(p.precio)} <button class="mini" onclick="editP(${k})">Editar</button> <button class="mini" onclick="delP(${p.id})">Eliminar</button></div>`).join('')+`<h3 style="margin-top:16px">Agregar o editar producto</h3><div id="fp" class="fila"></div>`;
+  $('#tab').innerHTML=data.map((p,k)=>`<div class="ped"><b>${esc(p.nombre)}</b> <span class="tag">(${esc(p.cat)}${p.sub?' · '+esc(p.sub):''})</span> · ${COP(p.precio)}
+    <span class="tag">${p.activo===false?'· Oculto para el cliente':'· Visible'}</span>
+    <div class="fila" style="margin-top:8px"><button class="mini" onclick="editP(${k})">Editar</button>
+    <button class="mini" onclick="toggleP(${p.id},${p.activo===false})">${p.activo===false?'Mostrar':'Ocultar'}</button>
+    <button class="mini" onclick="delP(${p.id})">Eliminar</button></div></div>`).join('')+
+    `<h3 style="margin-top:16px">Agregar o editar producto</h3><div id="fp" class="fila"></div>`;
   formP(null);
 }
 function formP(p){
@@ -151,7 +208,7 @@ function formP(p){
     <button onclick="vProductos()">Limpiar</button>`;
   $('#fC').value=p.cat; $('#fS').value=p.sub||'';
 }
-function editP(k){formP(adm[k])}
+function editP(k){formP(adm[k]);window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})}
 async function guardarP(){
   const o={nombre:$('#fN').value.trim(),precio:+$('#fPr').value,cat:$('#fC').value,sub:$('#fS').value,descripcion:$('#fD').value.trim(),imagen:$('#fI').value.trim(),colores:$('#fCo').value.trim()};
   if(!o.nombre||!o.precio)return alert('Falta el nombre o el precio.');
@@ -159,25 +216,45 @@ async function guardarP(){
   if(r.error)return alert('Error: '+r.error.message);
   vProductos();
 }
+async function toggleP(id,mostrar){const {error}=await sb.from('productos').update({activo:mostrar}).eq('id',id);if(error)return alert('Error: '+error.message);vProductos()}
 async function delP(id){if(confirm('¿Eliminar este producto?')){await sb.from('productos').delete().eq('id',id);vProductos()}}
 
 // ===== Diseños =====
 async function vDisenos(){
-  const {data}=await sb.from('pedidos').select('codigo,cliente,celular,items').order('creado',{ascending:false});
+  const {data,error}=await sb.from('pedidos').select('id,codigo,cliente,celular,items').order('creado',{ascending:false});
+  if(error)return $('#tab').textContent='Error: '+error.message;
   const lista=[];
-  (data||[]).forEach(p=>p.items.forEach(i=>{if(i.diseno)Object.entries(i.diseno).forEach(([k,v])=>lista.push({p,i,k,v}))}));
+  (data||[]).forEach(p=>p.items.forEach((i,idx)=>{if(i.diseno)Object.entries(i.diseno).forEach(([k,v])=>lista.push({p,i,idx,k,v}))}));
   if(!lista.length){$('#tab').innerHTML='<p class="tag">Aún no hay diseños de clientes.</p>';return}
   $('#tab').innerHTML='<div class="grid" id="gd"></div>';
   const url=async path=>{if(!path)return null;const {data:s}=await sb.storage.from('disenos').createSignedUrl(path,3600);return s?s.signedUrl:null};
   for(const x of lista){
     const vista=await url(x.v.mockup), original=await url(x.v.path);
-    $('#gd').insertAdjacentHTML('beforeend',`<div class="card"><div class="foto" style="height:260px">${vista?`<img src="${vista}" alt="">`:'Sin vista'}</div><div class="info"><div><b>${esc(x.p.codigo)}</b> · ${esc(x.i.nombre)} · ${esc(x.k)}</div><div>${esc(x.p.cliente)} · ${esc(x.p.celular)}</div><div class="tag">${esc(x.i.talla)}${x.i.color?' · '+esc(x.i.color):''}</div><div class="tag">${esc(dTxt({[x.k]:x.v}))}</div>${vista?`<a class="btn" href="${vista}" target="_blank" rel="noopener">Ver o descargar vista</a>`:''} ${original?`<a class="btn" href="${original}" target="_blank" rel="noopener">Ver diseño original</a>`:''}</div></div>`);
+    $('#gd').insertAdjacentHTML('beforeend',`<div class="card"><div class="foto">${vista?`<img src="${vista}" alt="">`:'Sin vista'}</div><div class="info"><div><b>${esc(x.p.codigo)}</b> · ${esc(x.i.nombre)} · ${esc(x.k)}</div><div>${esc(x.p.cliente)} · ${esc(x.p.celular)}</div><div class="tag">${esc(x.i.talla)}${x.i.color?' · '+esc(x.i.color):''}</div><div class="tag">${esc(dTxt({[x.k]:x.v}))}</div><div class="fila">${vista?`<a class="btn mini" href="${vista}" target="_blank" rel="noopener">Ver o descargar vista</a>`:''}${original?`<a class="btn mini" href="${original}" target="_blank" rel="noopener">Ver diseño original</a>`:''}<button class="mini" onclick="borrarDis(${x.p.id},${x.idx},'${x.k}','${x.v.path}','${x.v.mockup||''}')">Eliminar diseño</button></div></div></div>`);
   }
+}
+async function borrarDis(pedidoId,idx,k,path,mockup){
+  if(!confirm('¿Eliminar este diseño? No se puede recuperar.'))return;
+  const rutas=[path,mockup].filter(Boolean);
+  const {error:eS}=await sb.storage.from('disenos').remove(rutas);
+  if(eS)return alert('Error al borrar la imagen: '+eS.message);
+  const {data}=await sb.from('pedidos').select('items').eq('id',pedidoId).single();
+  const items=data.items;
+  delete items[idx].diseno[k];
+  if(!Object.keys(items[idx].diseno).length)items[idx].diseno=null;
+  const {error}=await sb.from('pedidos').update({items}).eq('id',pedidoId);
+  if(error)return alert('Error: '+error.message);
+  vDisenos();
 }
 
 // ===== Configuración =====
 async function vConfig(){
-  $('#tab').innerHTML=`<div class="fila"><input id="cW" placeholder="WhatsApp: 57 + número" value="${esc(cfg.whatsapp)}"><input id="cE" type="number" placeholder="Costo de envío en COP" value="${cfg.envio}"></div><br><button class="pri" onclick="guardarCfg()">Guardar configuración</button>`;
+  $('#tab').innerHTML=`<div class="ped"><h3>Datos de la tienda</h3>
+    <div class="fila"><input id="cW" placeholder="WhatsApp: 57 + número" value="${esc(cfg.whatsapp)}"><input id="cE" type="number" placeholder="Costo de envío en COP" value="${cfg.envio}"></div><br>
+    <button class="pri" onclick="guardarCfg()">Guardar configuración</button></div>
+    <div class="ped"><h3>Cambiar mi clave</h3>
+    <div class="fila"><input id="nc" type="password" placeholder="Nueva clave (mínimo 8 caracteres)"></div><br>
+    <button class="pri" onclick="cambiarClave()">Cambiar clave</button></div>`;
 }
 async function guardarCfg(){
   const w=$('#cW').value.replace(/\D/g,''), e=+$('#cE').value||0;
@@ -185,8 +262,15 @@ async function guardarCfg(){
   if(error)return alert('Error: '+error.message);
   await cargarCfg(); alert('Configuración guardada.');
 }
+async function cambiarClave(){
+  const n=$('#nc').value;
+  if(n.length<8)return alert('La clave debe tener al menos 8 caracteres.');
+  const {error}=await sb.auth.updateUser({password:n});
+  if(error)return alert('Error: '+error.message);
+  $('#nc').value=''; alert('Clave cambiada. La próxima vez entra con la nueva.');
+}
 
-// ===== Inicio =====
+// ===== Inicio de la página =====
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>tabAdm(b.dataset.t));
 (async()=>{
   sesion=(await sb.auth.getSession()).data.session;
