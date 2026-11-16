@@ -33,11 +33,13 @@ select,input,textarea{background:#1c1c1c;color:var(--t);border:1px solid #333;bo
 .tag{font-size:13px;color:var(--g)}
 .msg{color:#ff6b6b;font-size:14px;min-height:18px;margin-top:8px}
 h2,h3{color:var(--v);margin-top:0}
+body::before{content:"";position:fixed;inset:0;background:url(logo.png) center/min(70vmin,600px) no-repeat;opacity:.08;pointer-events:none;z-index:0}
+header,main{position:relative;z-index:1}
 </style>
 </head>
 <body>
 <header>
-  <div class="logo">MATHISA</div>
+  <img src="logo.png" alt="MATHISA" style="height:70px;width:auto;display:block">
   <span class="tag">Panel del equipo</span>
 </header>
 
